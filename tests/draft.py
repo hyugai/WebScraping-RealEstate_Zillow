@@ -9,12 +9,23 @@ from _libs import *
 from _usr_libs import *
 
 # exp 
-test_url = "https://www.zillow.com/homedetails/1611-Los-Alamos-Ave-SW-Albuquerque-NM-87104/6710669_zpid/"
+test_url = "https://www.zillow.com/albuquerque-nm/"
 headers = {'User-Agent': USER_AGENT, 'Accept-Language': ACCEPT_LANGUAGE, 
            'Accept-Encoding': ACCEPT_ENCODING}
 with requests.Session() as s:
     r = s.get(test_url, headers=headers)
     if r.status_code == 200:
-        print(r.content.decode('utf-8'))
+        dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml')))
+        node_script = dom.xpath("//script[@type='application/json']")
+        script_content = node_script[0].text
+        substitutions = {r'true': 'True', r'false': 'False', 
+                         r'null': 'None'}
+        for sub in substitutions:
+            script_content = re.compile(sub).sub(substitutions[sub], script_content)
+        script_content: dict = eval(script_content)
+        
+        # test
+        print(r.text)
+        ## test
     else:
         print(r.status_code)
