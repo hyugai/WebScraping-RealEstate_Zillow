@@ -18,9 +18,8 @@ with requests.Session() as s:
     if r.status_code != 200:
         print(r.status_code)
     else:
-        soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
-        text = re.sub(r'&amp;', '&', r.content.decode("utf-8"))
-        text_soup = BeautifulSoup(text, features="lxml")
+        soup = BeautifulSoup(r.text, features="lxml")
+        text_soup = BeautifulSoup(r.content.decode('utf-8'), features="lxml")
         dom = etree.HTML(str(soup))
 
     # test
