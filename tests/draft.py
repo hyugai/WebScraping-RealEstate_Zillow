@@ -15,17 +15,19 @@ headers = {'User-Agent': USER_AGENT, 'Accept-Language': ACCEPT_LANGUAGE,
 with requests.Session() as s:
     r = s.get(test_url, headers=headers)
     if r.status_code == 200:
-        dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml')))
+        dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml').prettify()))
         node_script = dom.xpath("//script[@type='application/json']")
-        script_content = node_script[0].text
+        script_content = node_script[-1].text
         substitutions = {r'true': 'True', r'false': 'False', 
                          r'null': 'None'}
         for sub in substitutions:
             script_content = re.compile(sub).sub(substitutions[sub], script_content)
-        script_content: dict = eval(script_content)
+        print(script_content)
+        eval(script_content.strip())
         
         # test
-        print(r.text)
+        # soup = BeautifulSoup(r.text, features='lxml')
+        # print(soup.prettify())
         ## test
     else:
         print(r.status_code)
