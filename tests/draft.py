@@ -22,12 +22,12 @@ with requests.Session() as s:
                          r'null': 'None'}
         for sub in substitutions:
             script_content = re.compile(sub).sub(substitutions[sub], script_content)
-        print(script_content)
-        eval(script_content.strip())
+        
+        script_content: dict = eval(script_content.strip())
+        
         
         # test
-        # soup = BeautifulSoup(r.text, features='lxml')
-        # print(soup.prettify())
+        print(script_content['props']['pageProps'].keys())
         ## test
     else:
         print(r.status_code)
