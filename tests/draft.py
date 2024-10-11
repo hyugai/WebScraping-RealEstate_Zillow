@@ -16,8 +16,8 @@ with requests.Session() as s:
     r = s.get(test_url, headers=headers)
     if r.status_code == 200:
         dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml').prettify()))
-        node_script = dom.xpath("//script[@type='application/json']")
-        script_content = node_script[-1].text
+        nodes_script = dom.xpath("//script[@type='application/json']")
+        script_content = nodes_script[-1].text
         substitutions = {r'true': 'True', r'false': 'False', 
                          r'null': 'None'}
         for sub in substitutions:
@@ -25,9 +25,15 @@ with requests.Session() as s:
         
         script_content: dict = eval(script_content.strip())
         
+        # test: flatten the dict until meet the required keys
+        key_to_find = 'listResults'
+        while key_to_find not in script_content:
+            tmp_dict = {}
+            keys_to_keep = [tmp_dict.update(value) for value in script_content.values() if isinstance(value, dict)]
+            script_content = tmp_dict
         
-        # test
-        print(script_content['props']['pageProps'].keys())
+        homes = script_content[key_to_find]
+        print(homes)
         ## test
     else:
         print(r.status_code)
