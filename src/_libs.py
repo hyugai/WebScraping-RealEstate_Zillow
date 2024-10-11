@@ -21,6 +21,3 @@ import sqlite3
 
 # type hint
 from typing import Iterator, Literal
-
-# Zillow
-from zillow_config import USER_AGENT
