@@ -18,10 +18,9 @@ with requests.Session() as s:
     if r.status_code != 200:
         print(r.status_code)
     else:
-        soup = BeautifulSoup(r.text, features="lxml")
-        text_soup = BeautifulSoup(r.content.decode('utf-8'), features="lxml")
+        soup = BeautifulSoup(r.content.decode('utf-8'), features="lxml")
         dom = etree.HTML(str(soup))
 
     # test
-    print(text_soup.prettify())
+    print(soup.prettify())
     ## test
