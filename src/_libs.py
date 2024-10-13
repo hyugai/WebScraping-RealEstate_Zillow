@@ -13,9 +13,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
-# selenium stealth
-from selenium_stealth import stealth
-
 # data structures / databases
 import numpy as np
 import pandas as pd
