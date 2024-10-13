@@ -20,4 +20,10 @@ with requests.Session() as s:
         print(r.status_code)
     else:
         soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
-        print(soup.prettify())
+        dom = etree.HTML(str(soup))
+
+        sibling_node_div = dom.xpath("//button[text()='Real Estate']/parent::div")[0]
+        sibling_nodes_ul = sibling_node_div.xpath("./following-sibling::ul")[0]
+        child_nodes_li = sibling_nodes_ul.xpath("./child::li")
+        
+        print(len(child_nodes_li))
