@@ -23,7 +23,10 @@ class CityURLScrapper():
                 sibling_node_ul = node_div.xpath("./following-sibling::ul")[0]
                 child_nodes_li = sibling_node_ul.xpath("./child::li")
 
-                print(len(child_nodes_li))
+                for li in child_nodes_li:
+                    descendant_node_a = li.xpath("./descendant::a")
+                    print(descendant_node_a.get("href"))
+
     def transform(self):
         pass
     def load(self):
