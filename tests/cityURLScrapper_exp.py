@@ -13,3 +13,5 @@ db_path = cwd + "tests/dbs/homes_by_city.db"
 
 zillow = ZillowHeadlessBrowser()
 url_tracker = TableTracker(db_path, "urls")
+city_url_scrapper = CityURLScrapper(zillow, url_tracker)
+city_url_scrapper.extract()
