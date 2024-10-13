@@ -2,7 +2,7 @@
 from _libs import *
 
 # class url tracker
-class URLTracker():
+class HomeTracker():
     def __init__(self, 
                  db_path: str, table_name: str) -> None:
         self.db_path = db_path
@@ -34,13 +34,3 @@ class URLTracker():
             cur.execute(f"INSERT OR REPLACE INTO {self.table_name}({columns}) VALUES({row})")
 
             cur.close()
-
-    def retrieve(self, 
-                 columns: tuple[str]) -> list[tuple]:
-        with sqlite3.connect(self.db_path) as conn:
-            cur = conn.cursor()
-            cur.execute(f"SELECT {columns} FROM {self.table_name}")
-            
-            rows = cur.fetchall()
-
-            return rows
