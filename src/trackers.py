@@ -2,7 +2,7 @@
 from _libs import *
 
 # class url tracker
-class HomeTracker():
+class TableTracker():
     def __init__(self, 
                  db_path: str, table_name: str) -> None:
         self.db_path = db_path
@@ -34,3 +34,21 @@ class HomeTracker():
             cur.execute(f"INSERT OR REPLACE INTO {self.table_name}({columns}) VALUES({row})")
 
             cur.close()
+
+    def retrieve(self, 
+                 columns: tuple[str]) -> Iterator[tuple]:
+        with sqlite3.connect(self.db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(f"SELECT {columns} FROM {self.table_name}")
+            
+            rows = cur.fetchall()
+            if rows:
+                for row in rows:
+                    yield row
+            else:
+                raise Exception("Table is EMPTY!!!")
+
+# class json tracker
+class JSONTracker():
+    def __init__(self):
+        pass
