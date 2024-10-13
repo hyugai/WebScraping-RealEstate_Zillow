@@ -10,7 +10,7 @@ from _usr_libs import *
 
 # exp 
 test_url = "https://www.zillow.com/albuquerque-nm/"
-headers = {'User-Agent': USER_AGENT, 'Accept-Language': ACCEPT_LANGUAGE, 
+headers = {'User-Agent': random.choice(USER_AGENTS), 'Accept-Language': ACCEPT_LANGUAGE, 
            'Accept-Encoding': ACCEPT_ENCODING}
 with requests.Session() as s:
     r = s.get(test_url, headers=headers)

@@ -1,5 +1,5 @@
 # libs
-import re, os, sys, time
+import re, os, sys, time, random
 
 # bs4
 import requests
@@ -12,6 +12,9 @@ from selenium.webdriver import ChromeOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+
+# selenium stealth
+from selenium_stealth import stealth
 
 # data structures / databases
 import numpy as np

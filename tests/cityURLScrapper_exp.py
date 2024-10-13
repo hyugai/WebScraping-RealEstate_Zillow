@@ -10,7 +10,7 @@ from _usr_libs import *
 
 # exp
 db_path = cwd + "tests/dbs/homes_by_city.db"
-headers = {'user-agent': USER_AGENT, 'accept-encoding': ACCEPT_ENCODING, 
+headers = {'user-agent': random.choice(USER_AGENTS), 'accept-encoding': ACCEPT_ENCODING, 
            'accept-language': ACCEPT_LANGUAGE}
 
 zillow = ZillowHeadlessBrowser(headers)
