@@ -10,5 +10,4 @@ USER_AGENTS = [
 ]
 ACCEPT_LANGUAGE = "en-US,en;q=0.9,vi;q=0.8,nl;q=0.7"
 ACCEPT_ENCODING = "gzip, deflate, br, zstd, sdch"
-ACCEPT = "application/x-clarity-gzip"
-REFERER = "https://www.zillow.com/"
+HOMEPAGE_URL = "https://www.zillow.com"

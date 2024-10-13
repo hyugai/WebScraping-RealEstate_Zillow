@@ -11,9 +11,8 @@ from _usr_libs import *
 
 # exp
 test_url = "https://www.zillow.com/homedetails/1611-Los-Alamos-Ave-SW-Albuquerque-NM-87104/6710669_zpid/"
-headers = {'User-Agent': random.choice(USER_AGENTS), 'Accept': ACCEPT,
-           'Accept-Language': ACCEPT_LANGUAGE, 'Accept-Encoding': ACCEPT_ENCODING, 
-           'Referer': REFERER}
+headers = {'User-Agent': random.choice(USER_AGENTS),
+           'Accept-Language': ACCEPT_LANGUAGE, 'Accept-Encoding': ACCEPT_ENCODING}
 with requests.Session() as s:
     r = s.get(test_url, headers=headers)
     if r.status_code != 200:
