@@ -10,8 +10,10 @@ from _usr_libs import *
 
 # exp
 db_path = cwd + "tests/dbs/homes_by_city.db"
+headers = {'user-agent': USER_AGENT, 'accept-encoding': ACCEPT_ENCODING, 
+           'accept-language': ACCEPT_LANGUAGE}
 
-zillow = ZillowHeadlessBrowser()
+zillow = ZillowHeadlessBrowser(headers)
 url_tracker = TableTracker(db_path, "urls")
 city_url_scrapper = CityURLScrapper(zillow, url_tracker)
 city_url_scrapper.extract()

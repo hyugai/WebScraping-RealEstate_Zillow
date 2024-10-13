@@ -11,7 +11,6 @@ class CityURLScrapper():
 
     def extract(self):
         self.zillow.start()
-        self.zillow.find_element("//button[text()='Real Estate']").click()
 
     def transform(self):
         pass
