@@ -23,11 +23,24 @@ class URLTracker():
                     cur.execute(f"ALTER TABLE {self.table_name} ADD COLUMN {name}")
                 else:
                     continue
+            
+            cur.close()
 
     def insert(self, 
                columns: tuple[str], 
                row: tuple) -> None:
-        pass
+        with sqlite3.connect(self.db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(f"INSERT OR REPLACE INTO {self.table_name}({columns}) VALUES({row})")
 
-    def retrieve(self):
-        pass
+            cur.close()
+
+    def retrieve(self, 
+                 columns: tuple[str]) -> list[tuple]:
+        with sqlite3.connect(self.db_path) as conn:
+            cur = conn.cursor()
+            cur.execute(f"SELECT {columns} FROM {self.table_name}")
+            
+            rows = cur.fetchall()
+
+            return rows
