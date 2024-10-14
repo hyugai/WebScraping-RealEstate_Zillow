@@ -30,10 +30,12 @@ class CityURLScrapper():
 
                     yield city_name, partial_city_url
 
-    def transform(self):
+    def transform(self) -> Iterator[tuple[str, str]]:
         for name, partial_url in self.extract():
             transformed_name = name.strip().lower().replace(' real estate', '')
-            url = HOMEPAGE_URL + partial_url
+            complete_url = HOMEPAGE_URL + partial_url
+
+            yield transformed_name, complete_url
 
     def load(self):
         pass
