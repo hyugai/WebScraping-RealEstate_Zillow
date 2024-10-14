@@ -33,7 +33,13 @@ with requests.Session() as s:
             script_content = tmp_dict
         
         homes = script_content[key_to_find]
-        print(homes)
         ## test
+
+        # test 01
+        ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")[0]
+        descendant_nodes_a = ancestor_nodes_ul.xpath("./descendant::a[contains(@title, 'Page')]")
+        print(len(descendant_nodes_a))
+
+        ## test 01
     else:
         print(r.status_code)

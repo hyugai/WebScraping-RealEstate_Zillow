@@ -49,6 +49,15 @@ class GeneralHomeScrapper_RE():
                  home_tracker: TableTracker, url_tracker: TableTracker) -> None:
         self.headers = headers
         self.home_tracker = home_tracker
-        self.url_tracker - url_tracker
+        self.url_tracker = url_tracker
 
-    
+    def extract(self): 
+        urls = self.url_tracker.retrieve(('city', 'url'))
+        for name, url in urls[:2]:
+            with requests.Session() as s:
+                r = s.get(url, headers=self.headers)
+
+    def transform(self):
+        pass
+    def load(self): 
+        pass
