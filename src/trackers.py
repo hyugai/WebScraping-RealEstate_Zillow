@@ -9,7 +9,7 @@ class TableTracker():
         self.table_name = table_name
 
     def create(self, 
-               uniq_column: str, others: list[str]) -> None:
+               uniq_column: str, all_columns: tuple[str]) -> None:
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
             cur.execute(f"CREATE TABLE IF NOT EXISTS {self.table_name}({uniq_column} TEXT UNIQUE)")
@@ -18,7 +18,7 @@ class TableTracker():
             columns = cur.fetchall()
             existing_names = [column[1] for column in columns]
 
-            for name in others:
+            for name in all_columns:
                 if name not in existing_names:
                     cur.execute(f"ALTER TABLE {self.table_name} ADD COLUMN {name}")
                 else:
@@ -31,7 +31,7 @@ class TableTracker():
                row: tuple) -> None:
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
-            cur.execute(f"INSERT OR REPLACE INTO {self.table_name}({columns}) VALUES({row})")
+            cur.execute(f"INSERT OR REPLACE INTO {self.table_name}{columns} VALUES{row}")
 
             cur.close()
 

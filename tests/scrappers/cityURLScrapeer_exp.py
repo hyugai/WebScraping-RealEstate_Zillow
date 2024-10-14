@@ -15,4 +15,4 @@ headers = {'User-Agent': random.choice(USER_AGENTS), 'Accept-Encoding': ACCEPT_E
 
 table_tracker = TableTracker(db_path, "city_urls")
 city_url_scrapper = CityURLScrapper(headers, table_tracker)
-city_url_scrapper.transform()
+city_url_scrapper.load()
