@@ -10,4 +10,4 @@ from _usr_libs import *
 
 # exp
 with sqlite3.connect('tests/dbs/real_estate.db') as conn:
-    pd.read_sql("select * from city_urls", conn).to_csv('test.csv', index=False)
+    pd.read_sql("select * from city_url", conn).to_csv('test.csv', index=False)

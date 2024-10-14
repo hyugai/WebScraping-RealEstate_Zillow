@@ -37,8 +37,18 @@ class CityURLScrapper():
 
             yield (name, complete_url)
 
-    def load(self):
+    def load(self) -> None:
         uniq_column, all_columns = 'city', ('city', 'url')
         self.table_tracker.create(uniq_column, all_columns)
         for record in self.transform():
             self.table_tracker.insert(all_columns, record)
+
+class GeneralHomeScrapper_RE():
+    def __init__(self, 
+                 headers: dict, 
+                 home_tracker: TableTracker, url_tracker: TableTracker) -> None:
+        self.headers = headers
+        self.home_tracker = home_tracker
+        self.url_tracker - url_tracker
+
+    

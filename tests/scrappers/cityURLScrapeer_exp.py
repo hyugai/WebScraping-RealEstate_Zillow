@@ -13,6 +13,6 @@ db_path = cwd + "/tests/dbs/real_estate.db"
 headers = {'User-Agent': random.choice(USER_AGENTS), 'Accept-Encoding': ACCEPT_ENCODING, 
            'Accept-Language': ACCEPT_LANGUAGE}
 
-table_tracker = TableTracker(db_path, "city_urls")
+table_tracker = TableTracker(db_path, "city_url")
 city_url_scrapper = CityURLScrapper(headers, table_tracker)
 city_url_scrapper.load()
