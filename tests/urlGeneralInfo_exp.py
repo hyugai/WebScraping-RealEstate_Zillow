@@ -39,7 +39,6 @@ with requests.Session() as s:
         ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")[0]
         descendant_nodes_a = ancestor_nodes_ul.xpath("./descendant::a[contains(@title, 'Page')]")
         print(len(descendant_nodes_a))
-
         ## test 01
     else:
         print(r.status_code)
