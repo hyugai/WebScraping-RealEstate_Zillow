@@ -56,6 +56,26 @@ class GeneralHomeScrapper_RE():
         for name, url in urls[:2]:
             with requests.Session() as s:
                 r = s.get(url, headers=self.headers)
+                if r.status_code != 200:
+                    continue
+                else:
+                    soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
+                    dom = etree.HTML(str(soup))
+
+                    nodes_script = dom.xpath("//script[@type='application/json']")
+                    script_content = nodes_script[-1].text
+                    substitutions = {r'true': 'True', r'false': False, 
+                                    r'null': None}
+                    for sub in substitutions:
+                        script_content = re.compile(sub).sub(substitutions[sub], script_content)
+                    
+                    script_content: dict = eval(script_content)
+                    key_to_find = 'listResults'
+                    while key_to_find not in script_content:
+                        new = {}
+                        [new.update(value) for value in script_content.values() if isinstance(value, dict)]
+                        script_content = new
+                    script_content = script_content[key_to_find]
 
     def transform(self):
         pass
