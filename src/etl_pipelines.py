@@ -68,8 +68,8 @@ class GeneralHomeScrapper_RE():
         for dom in self._extract_pages_as_doms(hrefs):
             nodes_script = dom.xpath("//script[@type='application/json']")
             script_content = nodes_script[-1].text
-            substitutions = {r'true': 'True', r'false': False, 
-                            r'null': None}
+            substitutions = {r'true': 'True', r'false': 'False', 
+                            r'null': 'None'}
             for sub in substitutions:
                 script_content = re.compile(sub).sub(substitutions[sub], script_content)
             
@@ -85,9 +85,8 @@ class GeneralHomeScrapper_RE():
                     
     def extract(self): 
         urls = self.url_tracker.retrieve(['city', 'url'])
-        print(urls)
         with requests.Session() as s:
-            for name, url in urls[1:2]:
+            for _, url in urls[1:2]:
                 r = s.get(url, headers=self.headers)
                 if r.status_code != 200:
                     continue
