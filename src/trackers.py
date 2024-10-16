@@ -36,15 +36,14 @@ class TableTracker():
             cur.close()
 
     def retrieve(self, 
-                 columns: tuple[str]) -> Iterator[tuple]:
+                 columns: tuple[str]) -> list[tuple]:
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
             cur.execute(f"SELECT {columns} FROM {self.table_name}")
             
             rows = cur.fetchall()
             if rows:
-                for row in rows:
-                    yield row
+                return rows
             else:
                 raise Exception("Table is EMPTY!!!")
 

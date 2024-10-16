@@ -51,10 +51,43 @@ class GeneralHomeScrapper_RE():
         self.home_tracker = home_tracker
         self.url_tracker = url_tracker
 
+    def _extract_pages_as_doms(self, hrefs: list[str]) -> Iterator[etree._Element]:
+        with requests.Session() as s:
+            for href in hrefs:
+                r = s.get(href, headers=self.headers)
+                if r.status_code != 200:
+                    print(r.status_code)
+                    continue
+                else:
+                    soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
+                    dom = etree.HTML(str(soup))
+
+                    yield dom
+        
+    def _extract_homes(self, hrefs: list[str]) -> Iterator[dict]:
+        for dom in self._extract_pages_as_doms(hrefs):
+            nodes_script = dom.xpath("//script[@type='application/json']")
+            script_content = nodes_script[-1].text
+            substitutions = {r'true': 'True', r'false': False, 
+                            r'null': None}
+            for sub in substitutions:
+                script_content = re.compile(sub).sub(substitutions[sub], script_content)
+            
+            script_content: dict = eval(script_content)
+            key_to_find = 'listResults'
+            while key_to_find not in script_content:
+                new = {}
+                [new.update(value) for value in script_content.values() if isinstance(value, dict)]
+                script_content = new
+            home = script_content[key_to_find]
+
+            yield home
+                    
     def extract(self): 
         urls = self.url_tracker.retrieve(('city', 'url'))
-        for name, url in urls[:2]:
-            with requests.Session() as s:
+        print(urls)
+        with requests.Session() as s:
+            for name, url in urls[:2]:
                 r = s.get(url, headers=self.headers)
                 if r.status_code != 200:
                     continue
@@ -62,22 +95,17 @@ class GeneralHomeScrapper_RE():
                     soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
                     dom = etree.HTML(str(soup))
 
-                    nodes_script = dom.xpath("//script[@type='application/json']")
-                    script_content = nodes_script[-1].text
-                    substitutions = {r'true': 'True', r'false': False, 
-                                    r'null': None}
-                    for sub in substitutions:
-                        script_content = re.compile(sub).sub(substitutions[sub], script_content)
-                    
-                    script_content: dict = eval(script_content)
-                    key_to_find = 'listResults'
-                    while key_to_find not in script_content:
-                        new = {}
-                        [new.update(value) for value in script_content.values() if isinstance(value, dict)]
-                        script_content = new
-                    script_content = script_content[key_to_find]
+                    ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")[0]
+                    descendant_nodes_a = ancestor_nodes_ul.xpath("./descendant::a[contains(@title, 'Page')]")
+                    hrefs = [HOMEPAGE_URL + node.get("href") for node in descendant_nodes_a]
+
+                    homes = [home for home in self._extract_homes(hrefs)]
+
+                    yield homes
 
     def transform(self):
-        pass
+        for homes in self.extract():
+            print(len(homes))
+
     def load(self): 
         pass
