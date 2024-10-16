@@ -85,8 +85,9 @@ class GeneralHomeScrapper_RE():
                     
     def extract(self): 
         urls = self.url_tracker.retrieve(['city', 'url'])
+        print(urls)
         with requests.Session() as s:
-            for name, url in urls[:2]:
+            for name, url in urls[1:2]:
                 r = s.get(url, headers=self.headers)
                 if r.status_code != 200:
                     continue
@@ -95,7 +96,7 @@ class GeneralHomeScrapper_RE():
                     dom = etree.HTML(str(soup))
 
                     # test
-                    ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")
+                    ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")[0]
                     ## test
                     descendant_nodes_a = ancestor_nodes_ul.xpath("./descendant::a[contains(@title, 'Page')]")
                     hrefs = [HOMEPAGE_URL + node.get("href") for node in descendant_nodes_a]
