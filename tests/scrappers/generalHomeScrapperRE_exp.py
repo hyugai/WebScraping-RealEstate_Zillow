@@ -10,10 +10,10 @@ from _usr_libs import *
 
 # exp
 db_path = cwd + "/tests/dbs/real_estate.db"
-headers = {'User-Agent': USER_AGENTS, 'Accept-Encoding': ACCEPT_ENCODING, 
+headers = {'User-Agent': random.choice(USER_AGENTS), 'Accept-Encoding': ACCEPT_ENCODING, 
            'Accept-Language': ACCEPT_LANGUAGE}
 
 home_tracker = TableTracker(db_path, "general_info")
 url_tracker = TableTracker(db_path, "city_url")
 home_scrapper = GeneralHomeScrapper_RE(headers, home_tracker, url_tracker)
-homes = home_scrapper.transform()
+home_scrapper.transform()

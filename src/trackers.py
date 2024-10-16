@@ -36,10 +36,10 @@ class TableTracker():
             cur.close()
 
     def retrieve(self, 
-                 columns: tuple[str]) -> list[tuple]:
+                 columns: list[str]) -> list[tuple]:
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
-            cur.execute(f"SELECT {columns} FROM {self.table_name}")
+            cur.execute(f"SELECT {', '.join(columns)} FROM {self.table_name}")
             
             rows = cur.fetchall()
             if rows:
