@@ -1,6 +1,11 @@
 # libs
 from _libs import *
 
+# class logs tracker
+class LogsTracker():
+    def __init__(self):
+        pass
+
 # class url tracker
 class TableTracker():
     def __init__(self, 

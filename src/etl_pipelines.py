@@ -83,10 +83,10 @@ class GeneralHomeScrapper_RE():
 
             yield home
                     
-    def extract(self): 
+    def extract(self) -> Iterator[list]: 
         urls = self.url_tracker.retrieve(['city', 'url'])
         with requests.Session() as s:
-            for _, url in urls[1:2]:
+            for _, url in urls[1:4]:
                 r = s.get(url, headers=self.headers)
                 if r.status_code != 200:
                     continue
@@ -94,9 +94,7 @@ class GeneralHomeScrapper_RE():
                     soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
                     dom = etree.HTML(str(soup))
 
-                    # test
                     ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")[0]
-                    ## test
                     descendant_nodes_a = ancestor_nodes_ul.xpath("./descendant::a[contains(@title, 'Page')]")
                     hrefs = [HOMEPAGE_URL + node.get("href") for node in descendant_nodes_a]
 
