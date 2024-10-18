@@ -51,7 +51,7 @@ class GeneralHomeScrapper_RE():
         self.home_tracker = home_tracker
         self.url_tracker = url_tracker
 
-    # iterate the DOM object of each page 
+    # iterate each page as an DOM object
     def _extract_pages_as_doms(self, hrefs: list[str]) -> Iterator[etree._Element]:
         with requests.Session() as s:
             for href in hrefs:
