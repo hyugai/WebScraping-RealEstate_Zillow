@@ -51,6 +51,7 @@ class GeneralHomeScrapper_RE():
         self.home_tracker = home_tracker
         self.url_tracker = url_tracker
 
+    # iterate the DOM object of each page 
     def _extract_pages_as_doms(self, hrefs: list[str]) -> Iterator[etree._Element]:
         with requests.Session() as s:
             for href in hrefs:
@@ -63,7 +64,8 @@ class GeneralHomeScrapper_RE():
                     dom = etree.HTML(str(soup))
 
                     yield dom
-        
+    
+    # get homes data from each returned DOM object        
     def _extract_homes(self, hrefs: list[str]) -> Iterator[dict]:
         for dom in self._extract_pages_as_doms(hrefs):
             nodes_script = dom.xpath("//script[@type='application/json']")
@@ -86,7 +88,7 @@ class GeneralHomeScrapper_RE():
     def extract(self) -> Iterator[list]: 
         urls = self.url_tracker.retrieve(['city', 'url'])
         with requests.Session() as s:
-            for _, url in urls[1:4]:
+            for _, url in urls[1:2]:
                 r = s.get(url, headers=self.headers)
                 if r.status_code != 200:
                     continue
@@ -104,7 +106,7 @@ class GeneralHomeScrapper_RE():
 
     def transform(self):
         for homes in self.extract():
-            print(len(homes))
+            print(homes)
 
     def load(self): 
         pass
