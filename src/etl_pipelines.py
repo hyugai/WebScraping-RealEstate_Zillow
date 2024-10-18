@@ -66,7 +66,8 @@ class GeneralHomeScrapper_RE():
                     yield dom
     
     # get homes data from each returned DOM object        
-    def _extract_homes(self, hrefs: list[str]) -> Iterator[dict]:
+    # this will return each home's info as a dict enclosed in a list
+    def _extract_homes(self, hrefs: list[str]) -> Iterator[list[dict]]:
         for dom in self._extract_pages_as_doms(hrefs):
             nodes_script = dom.xpath("//script[@type='application/json']")
             script_content = nodes_script[-1].text
@@ -75,6 +76,7 @@ class GeneralHomeScrapper_RE():
             for sub in substitutions:
                 script_content = re.compile(sub).sub(substitutions[sub], script_content)
             
+            # find list of home's info as a dict
             script_content: dict = eval(script_content)
             key_to_find = 'listResults'
             while key_to_find not in script_content:
@@ -85,6 +87,7 @@ class GeneralHomeScrapper_RE():
 
             yield home
                     
+    # iterate the URL and perfrom extractons
     def extract(self) -> Iterator[list]: 
         urls = self.url_tracker.retrieve(['city', 'url'])
         with requests.Session() as s:
