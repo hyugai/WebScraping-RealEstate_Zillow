@@ -1,4 +1,8 @@
 requests
+requests[socks]
+requests[security]
+stem
+fake-useragent
 bs4
 lxml
 selenium
