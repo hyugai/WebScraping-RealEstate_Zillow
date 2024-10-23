@@ -14,3 +14,8 @@ import sqlite3
 
 # type hint
 from typing import Iterator, Literal
+
+# tor
+from fake_useragent import UserAgent
+from stem.control import Controller
+from stem import Signal
