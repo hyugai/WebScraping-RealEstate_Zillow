@@ -9,8 +9,8 @@ from _libs import *
 from _usr_libs import *
 
 # exp
-proxies = {'http': 'socks5h://127.0.0.1:9050', 
-           'https': 'socks5h://127.0.0.1:9050'}
+proxies = {'http': 'socks5h://localhost:9050', 
+           'https': 'socks5h://localhost:9050'}
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36', 
            'Accept-Encoding': ACCEPT_ENCODING, 'Accept-Language': ACCEPT_LANGUAGE}
 with Controller.from_port(port=9051) as c:
