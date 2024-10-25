@@ -19,3 +19,6 @@ from typing import Iterator, Literal
 from fake_useragent import UserAgent
 from stem.control import Controller
 from stem import Signal
+
+# multiprocessing
+import multiprocessing

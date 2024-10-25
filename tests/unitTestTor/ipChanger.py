@@ -38,3 +38,7 @@ for _ in num_iters:
         c.authenticate('zillow')
         c.signal(Signal.NEWNYM)
         print(f"{requests.get('https://ident.me', headers=headers, proxies=proxies).text} || {headers['User-Agent']}")
+
+def change_ip():
+    proxies = {'http': 'socks5://127.0.0.1:9050',
+               'https': 'socks5://127.0.0.1:9050'} 
