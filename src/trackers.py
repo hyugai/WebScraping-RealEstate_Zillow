@@ -22,23 +22,19 @@ class IPTracker():
             c.signal(Signal.NEWNYM)
 
     def send_GETrequest(self, 
-                        url: str, num_trials: int) -> etree._Element:
+                        url: str, num_trials: int) -> str:
         trial = 1 
         while trial <= num_trials:
-            # change IP
-            self.change_IP()
-            
             # send request
             with requests.Session() as s:
-                self.headers['User-Agent'] = UserAgent().random
-                r = s.get(url=url, headers=self.headers, proxies=self.proxies) 
+                r = s.get(url=url, headers=self.headers) 
                 if r.status_code == 200:
-                    soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
-                    dom = etree.HTML(str(soup))
-                    return dom
-
+                    print(f'Trial {trial}: Succeeded')
+                    return r.text 
                 else:
-                       continue
+                    print(f'Trial {trial}: Failed')
+                    trial += 1
+                    continue
         
         raise ValueError("Fail to retrive HTML!")
 
