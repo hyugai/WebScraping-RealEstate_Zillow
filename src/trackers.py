@@ -8,7 +8,7 @@ class LogsTracker():
 # class IP tracker
 class IPTracker():
     def __init__(self, 
-                 ctrlPort_passwd: str, ctrlPort: str, 
+                 ctrlPort_passwd: str, ctrlPort: int, 
                  proxies: dict, headers: dict) -> None:
 
        self.proxies = proxies
