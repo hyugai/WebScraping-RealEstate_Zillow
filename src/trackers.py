@@ -16,23 +16,25 @@ class IPTracker():
        self.ctrlPort = ctrlPort
        self.headers = headers
 
+    def change_IP(self) -> None:
+        with Controller.from_port(port=self.ctrlPort) as c:
+            c.authenticate(self.ctrlPort_passwd)
+            c.signal(Signal.NEWNYM)
+
     def send_GETrequest(self, 
                         url: str, num_trials: int):
         trial = 1 
         while trial <= num_trials:
-            with Controller.from_port(port=self.ctrlPort) as c:
-                c.authenticate(self.ctrlPort_passwd) 
-                c.signal(Signal.NEWNYM)
-               
-                with requests.Session() as s:
-                    self.headers['User-Agent'] = UserAgent().random
-                    r = s.get(url=url, headers=self.headers, proxies=self.proxies) 
-                    if r.status_code == 200:
-                       soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
-                       dom = etree.HTML(str(soup))
-                       return dom
+            self.change_IP()
+            with requests.Session() as s:
+                self.headers['User-Agent'] = UserAgent().random
+                r = s.get(url=url, headers=self.headers, proxies=self.proxies) 
+                if r.status_code == 200:
+                    soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
+                    dom = etree.HTML(str(soup))
+                    return dom
 
-                    else:
+                else:
                        continue
         
         raise ValueError("Fail to retrive HTML!")
