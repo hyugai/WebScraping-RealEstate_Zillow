@@ -34,6 +34,8 @@ class IPTracker():
 
                     else:
                        continue
+        
+        raise ValueError("Fail to retrive HTML!")
 
 # class url tracker
 class TableTracker():
