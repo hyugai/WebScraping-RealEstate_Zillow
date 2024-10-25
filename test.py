@@ -19,6 +19,6 @@ with Controller.from_port(port=9051) as c:
     with requests.Session() as s:
         r = s.get(HOMEPAGE_URL, headers=headers)
         if r.status_code != 200:
-            pass
+           print(r.text) 
         else:
             print(r.status_code)
