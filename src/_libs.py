@@ -21,4 +21,4 @@ from stem.control import Controller
 from stem import Signal
 
 # multiprocessing
-import multiprocessing
+import multiprocessing as mp
