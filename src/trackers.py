@@ -22,10 +22,13 @@ class IPTracker():
             c.signal(Signal.NEWNYM)
 
     def send_GETrequest(self, 
-                        url: str, num_trials: int):
+                        url: str, num_trials: int) -> etree._Element:
         trial = 1 
         while trial <= num_trials:
+            # change IP
             self.change_IP()
+            
+            # send request
             with requests.Session() as s:
                 self.headers['User-Agent'] = UserAgent().random
                 r = s.get(url=url, headers=self.headers, proxies=self.proxies) 
