@@ -52,6 +52,19 @@ class GeneralHomeScrapper_RE():
         self.url_tracker = url_tracker
 
     # iterate each page as an DOM object
+    def _send_GETrequest(self, 
+                         url: str, num_trials: int):
+        proxies = {'http': 'socks5://127.0.0.1:9050', 
+                   'https': 'socks5://127.0.0.1:9050'}
+        self.headers['User-Agent'] = UserAgent().random
+        trial = 1, flag = False
+        while trial <= num_trials:
+            with Controller.from_port(port=9051) as c:
+                c.authenticate('zillow')
+                c.signal(Signal.NEWNYM)
+                with requests.Session() as s:
+                    r = s.get(url=url, headers=self.headers, proxies=proxies)
+
     def _extract_pages_as_doms(self, hrefs: list[str]) -> Iterator[etree._Element]:
         with requests.Session() as s:
             for href in hrefs:

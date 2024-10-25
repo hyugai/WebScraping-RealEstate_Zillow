@@ -5,6 +5,35 @@ from _libs import *
 class LogsTracker():
     def __init__(self):
         pass
+# class IP tracker
+class IPTracker():
+    def __init__(self, 
+                 ctrlPort_passwd: str, ctrlPort: str, 
+                 proxies: dict, headers: dict) -> None:
+
+       self.proxies = proxies
+       self.ctrlPort_passwd = ctrlPort_passwd
+       self.ctrlPort = ctrlPort
+       self.headers = headers
+
+    def send_GETrequest(self, 
+                        url: str, num_trials: int):
+        trial = 1 
+        while trial <= num_trials:
+            with Controller.from_port(port=self.ctrlPort) as c:
+                c.authenticate(self.ctrlPort_passwd) 
+                c.signal(Signal.NEWNYM)
+               
+                with requests.Session() as s:
+                    self.headers['User-Agent'] = UserAgent().random
+                    r = s.get(url=url, headers=self.headers, proxies=self.proxies) 
+                    if r.status_code == 200:
+                       soup = BeautifulSoup(r.content.decode("utf-8"), features="lxml")
+                       dom = etree.HTML(str(soup))
+                       return dom
+
+                    else:
+                       continue
 
 # class url tracker
 class TableTracker():
