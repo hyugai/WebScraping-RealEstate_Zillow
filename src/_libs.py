@@ -22,3 +22,5 @@ from stem import Signal
 
 # multiprocessing
 import multiprocessing as mp
+import aiohttp
+import asyncio

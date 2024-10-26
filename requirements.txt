@@ -1,6 +1,7 @@
 requests
 requests[socks]
 requests[security]
+aiohttp
 stem
 fake-useragent
 bs4
