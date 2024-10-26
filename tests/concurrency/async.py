@@ -9,4 +9,5 @@ from _libs import *
 from _usr_libs import *
 
 # exp
-urls = [HOMEPAGE_URL]*100
+urls = [HOMEPAGE_URL]*5
+
