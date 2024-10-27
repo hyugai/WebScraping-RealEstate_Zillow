@@ -19,6 +19,7 @@ async def fetch(
         await r.text()
 
 async def main() -> None:
+    queue = asyncio.Queue()
     headers = {'Accept-Language': ACCEPT_LANGUAGE, 'Accept-Encoding': ACCEPT_ENCODING, 
                 'User-Agent': UserAgent().random}
     async with aiohttp.ClientSession(headers=headers) as s:
