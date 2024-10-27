@@ -24,12 +24,14 @@ class GeneralInfoScrapper(TableTracker):
             content = await r.text() 
             await queue.put(content)
 
+    async def func_02(self):
+        pass
+
     async def test(self):
         queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self.headers) as s:
-            tasks = [self.func_01(s, url, queue) for url in self.cities_urls] 
 
-            await asyncio.run(*tasks)
+            await asyncio.run(*[self.func_01(s, url, queue) for url in self.cities_urls])
 
     def extract(self):
         pass
