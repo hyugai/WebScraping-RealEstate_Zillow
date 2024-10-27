@@ -8,8 +8,26 @@ if path_to_src not in sys.path:
 from _libs import *
 from _usr_libs import *
 
+# class 
+class CityURLScrapper(TableTracker):
+    def __init__(self, 
+                 db_path: str, table_name: str, 
+                 headers: dict) -> None:
+        super().__init__(db_path, table_name)
+        self.headers = headers
+    
+    async def extract(self):
+        async with aiohttp.ClientSession(headers=self.headers) as session:
+            pass
+
+    def transform(self):
+        pass
+
+    def load(self):
+        pass
+
 # class GeneralScrapper
-class GeneralScrapper(TableTracker):
+class GeneralInfoScrapper(TableTracker):
     def __init__(self, 
                  db_path: str, table_name: str, 
                  headers: dict, cities_urls: list[str]) -> None:
