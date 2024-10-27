@@ -7,6 +7,7 @@ if path_to_src not in sys.path:
     sys.path.append(path_to_src)
 from _libs import *
 from _usr_libs import *
+from aiohttp_socks import ProxyConnector
 
 # exp
 urls = [HOMEPAGE_URL]*5
