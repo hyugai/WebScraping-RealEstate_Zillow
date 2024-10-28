@@ -17,24 +17,32 @@ class GeneralInfoScrapper(TableTracker):
         self.headers = headers
         self.cities_urls = cities_urls
         
-    async def func_01(self, 
+    # extract link
+    async def pages_hrefs_collector(self, 
                       s: aiohttp.ClientSession, url: str, 
-                      queue: asyncio.Queue) -> None:
+                      queue_hrefs: asyncio.Queue) -> None:
         async with s.get(url) as r:
             content = await r.text() 
-            await queue.put(content)
 
-    async def func_02(self):
-        pass
+            # processing
+            dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+            ancestor_nodes_ul = dom.xpath("//nav[@role='navigation']/child::ul")[0]
+            descendant_nodes_a = ancestor_nodes_ul.xpath("./descendant::a[contains(@title, 'Page')]")
+            hrefs = [HOMEPAGE_URL + node.get("href") for node in descendant_nodes_a]
+            ## processing
+
+            await queue_hrefs.put(hrefs)
+
+    # extract pages links of each city
+    async def homes_collector(self):
+        while True:
+            pass 
 
     async def test(self):
         queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self.headers) as s:
 
             await asyncio.run(*[self.func_01(s, url, queue) for url in self.cities_urls])
-
-    def extract(self):
-        pass
 
     def transform(self):
         pass
