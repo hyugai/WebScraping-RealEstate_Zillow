@@ -9,4 +9,11 @@ from _libs import *
 from _usr_libs import *
 
 # exp
-scrapper = GeneralInfoScrapper()
+def exp() -> None:
+    db_path = cwd + "/src/dbs/real_estate.db"
+    table_name = "async"
+    headers = {'Accept-Language': ACCEPT_LANGUAGE, 'Accept-Encoding': ACCEPT_ENCODING, 
+               'User-Agent': UserAgent().random}
+    
+
+    scrapper = GeneralInfoScrapper(db_path, table_name, headers)
