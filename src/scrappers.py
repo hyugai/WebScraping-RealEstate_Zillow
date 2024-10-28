@@ -34,15 +34,27 @@ class GeneralInfoScrapper(TableTracker):
             await queue_hrefs.put(hrefs)
 
     # extract pages links of each city
-    async def homes_collector(self):
+    async def homes_collector(self,
+                              s: aiohttp.ClientSession, 
+                              queue_hrefs: asyncio.Queue, queue_homes: asyncio.Queue) -> None:
         while True:
-            pass 
+            href = await queue_hrefs.get()
+            async with s.get(href) as r:
+                content = await r.text()
 
-    async def test(self):
-        queue = asyncio.Queue()
+                # processing
+
+                ## processing
+                
+                queue_hrefs.task_done()
+
+
+    async def extract(self):
+        queue_hrefs = asyncio.Queue()
+        queue_homes = asyncio.Queue()
         async with aiohttp.ClientSession(headers=self.headers) as s:
 
-            await asyncio.run(*[self.func_01(s, url, queue) for url in self.cities_urls])
+            await asyncio.run(*[self.func_01(s, url, queue_hrefs) for url in self.cities_urls])
 
     def transform(self):
         pass
