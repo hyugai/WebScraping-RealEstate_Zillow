@@ -16,4 +16,12 @@ def exp() -> None:
                'User-Agent': UserAgent().random}
     
 
-    scrapper = GeneralInfoScrapper(db_path, table_name, headers)
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        rows = cur.fetchall()
+        conn.commit(); cur.close()
+    print(rows[:5])
+
+    scrapper = GeneralInfoScrapper(db_path, table_name, headers, rows)
+
+exp()

@@ -8,6 +8,12 @@ if path_to_src not in sys.path:
 from _libs import *
 from _usr_libs import *
 
+# class URLsScrapper
+class URLsScrapper(TableTracker):
+    def __init__(self, 
+                 db_path: str, table_name: str) -> None:
+        super().__init__(db_path, table_name)
+
 # class GeneralScrapper
 class GeneralInfoScrapper(TableTracker):
     def __init__(self, 
