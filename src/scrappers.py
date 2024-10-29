@@ -25,23 +25,35 @@ class URLScrapper(TableTracker):
                 raise ValueError(f'Failed fetching (error code: {r.status_code})')
 
     async def pages_collector(self,
-                                s: aiohttp.ClientSession, href: str, 
+                                s: aiohttp.ClientSession, city_href: str, 
                                 queue: asyncio.Queue):
-        async with s.get(href) as r:
+        self.headers['User-Agent'] = UserAgent().random
+        async with s.get(city_href, headers=self.headers) as r:
             if r.status == 200:
                 content = await r.text()
-            else:
-                print(r.status)
 
-    async def main_extract(self):
+                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+                xpath = "//li[contains(@class, 'PaginationNumberItem')]/child::a"
+                nodes_a = dom.xpath(xpath)
+                
+                if len(nodes_a) != 0:
+                    pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
+
+                    await queue.put(pages_hrefs)
+                    queue.task_done()
+            else:
+                print(city_href) 
+
+    async def extract(self):
         hrefs = self.cities_collector()
 
-        self.headers['User-Agent'] = UserAgent().random
         queue = asyncio.Queue()
-        async with aiohttp.ClientSession(headers=self.headers) as s:
+        async with aiohttp.ClientSession() as s:
             tasks = [self.pages_collector(s, href, queue) for href in hrefs] 
             
             await asyncio.gather(*tasks)
+
+            await queue.join()
     
     def main(self):
-        asyncio.run(self.main_extract())
+        asyncio.run(self.extract())
