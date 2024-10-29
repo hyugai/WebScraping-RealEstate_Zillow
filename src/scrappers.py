@@ -9,14 +9,15 @@ class URLScrapper(TableTracker):
         super().__init__(path, name)
         self.headers = headers
 
-    def extract(self):
+    def extract(self) -> str:
         with requests.Session() as s:
-            #self.headers['User-Agent'] = UserAgent().random 
-            headers = {'User-Agent': UserAgent().random}
-            r = s.get(ZILLOW, headers=headers) 
+            self.headers['User-Agent'] = UserAgent().random 
+            r = s.get(ZILLOW, headers=self.headers) 
 
-            print(r.status_code)
-            return r.content.decode('utf-8')
+            if r.status_code == 200:
+                return r.text
+            else:
+                raise ValueError(f'Failed fetching (error code: {r.status_code})')
 
     def transform(self):
         content = self.extract() 
