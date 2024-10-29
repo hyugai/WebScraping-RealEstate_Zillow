@@ -9,18 +9,18 @@ class URLScrapper(TableTracker):
         super().__init__(path, name)
         self.headers = headers
 
-    def extract(self) -> str:
+    def cities_collector(self) -> str:
         with requests.Session() as s:
             self.headers['User-Agent'] = UserAgent().random 
             r = s.get(ZILLOW, headers=self.headers) 
 
             if r.status_code == 200:
-                return r.text
+                dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
+                xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
+                nodes_a = dom.xpath(xpath)
+                full_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
             else:
                 raise ValueError(f'Failed fetching (error code: {r.status_code})')
 
-    def transform(self):
-        content = self.extract() 
-
-    def load(self):
+    def pages_collector(self):
         pass

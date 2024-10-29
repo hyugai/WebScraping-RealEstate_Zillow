@@ -12,7 +12,6 @@ def url_scrapper():
     path = cwd + 'db/real_estate.db'
     name = 'city_url'
     scrapper = URLScrapper(path, name, ZILLOW_HEADERS)
-    return scrapper.extract()
+    scrapper.cities_collector()
 
-content = url_scrapper()
-print(content)
+url_scrapper()
