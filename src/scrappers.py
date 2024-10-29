@@ -1,5 +1,6 @@
 # libs
 from libs import *
+from aiohttp_socks.connector import ProxyConnector
 
 # URLsCollector
 class URLScrapper(TableTracker):
@@ -29,7 +30,7 @@ class URLScrapper(TableTracker):
                                 queue: asyncio.Queue):
         self.headers['User-Agent'] = UserAgent().random
         async with s.get(city_href, headers=self.headers) as r:
-            if r.status == 200:
+            if (r.status == 200): 
                 content = await r.text()
 
                 dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
@@ -44,9 +45,8 @@ class URLScrapper(TableTracker):
             else:
                 print(city_href)
 
-    async def extract(self):
-        hrefs = self.cities_collector()
-
+    async def extract(self, 
+                      hrefs: list[str]):
         queue = asyncio.Queue()
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks = [self.pages_collector(s, href, queue) for href in hrefs] 
@@ -55,5 +55,9 @@ class URLScrapper(TableTracker):
 
             await queue.join()
     
+    def retry(self):
+        pass
+
     def main(self):
-        asyncio.run(self.extract())
+        hrefs = self.cities_collector()
+        asyncio.run(self.extract(hrefs))
