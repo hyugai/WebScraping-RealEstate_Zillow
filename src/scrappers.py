@@ -13,9 +13,9 @@ class URLScrapper(TableTracker):
         with requests.Session() as s:
             self.headers['User-Agent'] = UserAgent().random 
             r = s.get(ZILLOW, headers=self.headers) 
-            print(r.status_code)
 
-            return r.text
+            print(r.status_code)
+            return r.content.decode('utf-8')
 
     def transform(self):
         content = self.extract() 
