@@ -24,3 +24,6 @@ class URLScrapper(TableTracker):
 
     def pages_collector(self):
         pass
+
+    def main_extract(self):
+        pass
