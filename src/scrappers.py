@@ -42,13 +42,13 @@ class URLScrapper(TableTracker):
                     await queue.put(pages_hrefs)
                     queue.task_done()
             else:
-                print(city_href) 
+                print(city_href)
 
     async def extract(self):
         hrefs = self.cities_collector()
 
         queue = asyncio.Queue()
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks = [self.pages_collector(s, href, queue) for href in hrefs] 
             
             await asyncio.gather(*tasks)
