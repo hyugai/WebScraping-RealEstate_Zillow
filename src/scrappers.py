@@ -19,7 +19,7 @@ class URLScrapper(TableTracker):
                 dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
                 xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
                 nodes_a = dom.xpath(xpath)
-                full_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
+                full_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
 
                 return full_hrefs
             else:
@@ -37,11 +37,9 @@ class URLScrapper(TableTracker):
                 xpath = "//li[contains(@class, 'PaginationNumberItem')]/child::a"
                 nodes_a = dom.xpath(xpath)
                 
-                if len(nodes_a) != 0:
-                    pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
-
-                    await queues['succeeded'].put(pages_hrefs)
-                    queues['succeeded'].task_done()
+                pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
+                await queues['succeeded'].put(pages_hrefs)
+                queues['succeeded'].task_done()
             else:
                 await queues['retry'].put(city_href) 
                 queues['retry'].task_done()
@@ -62,5 +60,3 @@ class URLScrapper(TableTracker):
     def main(self):
         hrefs = self.cities_collector()
         queues = asyncio.run(self.extract(hrefs))
-
-        print(queues['succeeded'].qsize(), queues['retry'].qsize())

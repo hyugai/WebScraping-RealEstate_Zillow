@@ -17,7 +17,7 @@ ZILLOW_HEADERS = {
     'Accept-Encoding': 'gzip,deflate,sdch',
     'Accept-Language': 'en-US,en;q=0.8'
 }
-ZILLOW = 'https://www.zillow.com/'
+ZILLOW = 'https://www.zillow.com'
 
 # usr libs
 from trackers import TableTracker
