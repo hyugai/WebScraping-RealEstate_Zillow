@@ -5,10 +5,9 @@ from libs import *
 class URLScrapper(TableTracker):
     def __init__(self,
                  path: str, name: str, 
-                 headers: dict):
+                 headers: dict[str, str]):
         super().__init__(path, name)
         self.headers = headers
-        self.queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
 
     def cities_collector(self) -> list[str]:
         with requests.Session() as s:
@@ -43,20 +42,45 @@ class URLScrapper(TableTracker):
             else:
                 await queues['retry'].put(city_href) 
                 queues['retry'].task_done()
+    
+    async def homes_collector(self, 
+                              s: aiohttp.ClientSession, queue: asyncio.Queue):
+        while True:
+            page_href = await queue.get() 
+            self.headers['User-Agent'] = UserAgent().random
+            async with s.get(page_href, headers=self.headers) as r:
+                if (r.status == 200):
+                    content = await r.text() 
+
+                    dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+                    xpath = "//script[@type='application/json']"
+                    nodes_script = dom.xpath(xpath)
+                    print(len(nodes_script))
+                else:
+                    print('Failed') 
+
+            queue.task_done()
 
     async def extract(self, 
-                      hrefs: list[str]):
+                      hrefs: list[str]) -> dict[str, asyncio.Queue]:
         queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
-            tasks = [self.pages_collector(s, href, queues) for href in hrefs] 
+            tasks_pages_extractor = [asyncio.create_task(self.pages_collector(s, href, queues)) for href in hrefs] 
             
-            await asyncio.gather(*tasks)
+            await asyncio.gather(*tasks_pages_extractor)
 
-            await self.queues['succeeded'].join()
-            await self.queues['retry'].join()
+            for queue in queues.values():
+                await queue.join()
+
+            # print out results
+            print(f"Succeeded: {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
+            ##
         
         return queues
     
     def main(self):
         hrefs = self.cities_collector()
         queues = asyncio.run(self.extract(hrefs))
+
+    def retry(self):
+        pass
