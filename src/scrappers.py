@@ -41,36 +41,14 @@ class URLScrapper(TableTracker):
                     await queues['succeeded'].put(href)
             else:
                 await queues['retry'].put(city_href) 
-    
-#    async def homes_extractor(self, 
-#                              s: aiohttp.ClientSession, queue: asyncio.Queue):
-#        while True: 
-#            page = await queue.get() 
-#            self.headers['User-Agent'] = UserAgent().random
-#            async with s.get(page, headers=self.headers) as r:
-#                if (r.status == 200):
-#                    content = await r.text() 
-#
-#                    dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
-#                    xpath = "//script[@type='application/json']"
-#                    nodes_script = dom.xpath(xpath)
-#                    print(len(nodes_script))
-#                else:
-#                    print('Failed') 
-#            queue.task_done()
 
     async def collect(self, 
                       hrefs: list[str]) -> dict[str, asyncio.Queue]:
         queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks_pages_collector = [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
-#            task_homes_collector = asyncio.create_task(self.homes_extractor(s, queues['succeeded']))
 
             await asyncio.gather(*tasks_pages_collector)
-
-#            await queues['succeeded'].join()
-
-#            task_homes_collector.cancel()
 
             # print out results
             print(f"Succeeded: {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
