@@ -2,11 +2,9 @@
 from libs import *
 
 # URLsCollector
-class URLScrapper(TableTracker):
+class URLScrapper():
     def __init__(self,
-                 path: str, name: str, 
-                 headers: dict[str, str]):
-        super().__init__(path, name)
+                 headers: dict[str, str]) -> None:
         self.headers = headers
 
     def extract_cities_hrefs(self) -> list[str]:
@@ -26,7 +24,7 @@ class URLScrapper(TableTracker):
 
     async def extract_pages_hrefs(self,
                                 s: aiohttp.ClientSession, city_href: str, 
-                                queues: dict[str, asyncio.Queue]):
+                                queues: dict[str, asyncio.Queue]) -> None:
         self.headers['User-Agent'] = UserAgent().random
         async with s.get(city_href, headers=self.headers) as r:
             if (r.status == 200): 
@@ -42,16 +40,29 @@ class URLScrapper(TableTracker):
             else:
                 await queues['retry'].put(city_href) 
 
+    async def transship(self,
+                   all_pages_hrefs: list, queue: asyncio.Queue):
+        while True:
+            href = await queue.get()
+            all_pages_hrefs.append(href)
+
+            queue.task_done()
+
     async def collect(self, 
                       hrefs: list[str]) -> dict[str, asyncio.Queue]:
+        all_pages_hrefs = []
         queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks_pages_collector = [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
+            task_transship = asyncio.create_task(self.transship(all_pages_hrefs, queues['succeeded']))
 
             await asyncio.gather(*tasks_pages_collector)
+            
+            await queues['succeeded'].join()
+            task_transship.cancel()
 
             # print out results
-            print(f"Succeeded: {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
+            print(f"Succeeded: {len(all_pages_hrefs)}\nFailed: {queues['retry'].qsize()}")
             ##
         
         return queues
