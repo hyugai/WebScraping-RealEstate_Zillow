@@ -9,7 +9,7 @@ class URLScrapper(TableTracker):
         super().__init__(path, name)
         self.headers = headers
 
-    def cities_collector(self) -> list[str]:
+    def extract_cities_hrefs(self) -> list[str]:
         with requests.Session() as s:
             self.headers['User-Agent'] = UserAgent().random 
             r = s.get(ZILLOW, headers=self.headers) 
@@ -24,7 +24,7 @@ class URLScrapper(TableTracker):
             else:
                 raise ValueError(f'Failed fetching (error code: {r.status_code})')
 
-    async def pages_collector(self,
+    async def extract_pages_hrefs(self,
                                 s: aiohttp.ClientSession, city_href: str, 
                                 queues: dict[str, asyncio.Queue]):
         self.headers['User-Agent'] = UserAgent().random
@@ -37,21 +37,17 @@ class URLScrapper(TableTracker):
                 nodes_a = dom.xpath(xpath)
                 
                 pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
-                await queues['succeeded'].put(pages_hrefs)
-                #queues['succeeded'].task_done()
+                for href in pages_hrefs:
+                    await queues['succeeded'].put(href)
             else:
                 await queues['retry'].put(city_href) 
-                #queues['retry'].task_done()
     
-    async def homes_collector(self, 
-                              s: aiohttp.ClientSession, queue: asyncio.Queue):
-        count = 1
-        while True: 
-            print(count, queue.qsize())
-            pages = await queue.get() 
-            print(pages)
+#    async def homes_extractor(self, 
+#                              s: aiohttp.ClientSession, queue: asyncio.Queue):
+#        while True: 
+#            page = await queue.get() 
 #            self.headers['User-Agent'] = UserAgent().random
-#           async with s.get(page_href, headers=self.headers) as r:
+#            async with s.get(page, headers=self.headers) as r:
 #                if (r.status == 200):
 #                    content = await r.text() 
 #
@@ -61,21 +57,20 @@ class URLScrapper(TableTracker):
 #                    print(len(nodes_script))
 #                else:
 #                    print('Failed') 
-            count += 1
-            queue.task_done()
+#            queue.task_done()
 
-    async def extract(self, 
+    async def collect(self, 
                       hrefs: list[str]) -> dict[str, asyncio.Queue]:
         queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
-            tasks_pages_collector = [asyncio.create_task(self.pages_collector(s, href, queues)) for href in hrefs]
-            task_homes_collector = asyncio.create_task(self.homes_collector(s, queues['succeeded']))
+            tasks_pages_collector = [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
+#            task_homes_collector = asyncio.create_task(self.homes_extractor(s, queues['succeeded']))
 
             await asyncio.gather(*tasks_pages_collector)
 
-            await queues['succeeded'].join()
+#            await queues['succeeded'].join()
 
-            task_homes_collector.cancel()
+#            task_homes_collector.cancel()
 
             # print out results
             print(f"Succeeded: {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
@@ -84,8 +79,30 @@ class URLScrapper(TableTracker):
         return queues
     
     def main(self):
-        hrefs = self.cities_collector()
-        queues = asyncio.run(self.extract(hrefs))
+        hrefs = self.extract_cities_hrefs()
+        queues = asyncio.run(self.collect(hrefs))
 
     def retry(self):
         pass
+
+
+class GeneralHomeExtractor():
+    def __init__(self, 
+                 headers: dict[str, str], pages_hrefs: list[str]) -> None:
+        self.headers = headers
+        self.pages_hrefs = pages_hrefs
+
+    async def homes_extractor(self, 
+                              s: aiohttp.ClientSession, queue: asyncio.Queue, 
+                              href: str):
+        self.headers['User-Agent'] = UserAgent().random
+        async with s.get(href, headers=self.headers) as r:
+            if (r.status == 200):
+                content = await r.text() 
+
+                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+                xpath = "//script[@type='application/json']"
+                nodes_script = dom.xpath(xpath)
+                print(len(nodes_script))
+            else:
+                print('Failed') 
