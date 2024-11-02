@@ -41,35 +41,40 @@ class URLScrapper():
                 await queues['retry'].put(city_href) 
 
     async def transship(self,
-                   all_pages_hrefs: list, queue: asyncio.Queue):
+                        collected_hrefs: list, queue: asyncio.Queue):
         while True:
             href = await queue.get()
-            all_pages_hrefs.append(href)
+            collected_hrefs.append(href)
 
             queue.task_done()
-
+    
     async def collect(self, 
-                      hrefs: list[str]) -> dict[str, asyncio.Queue]:
-        all_pages_hrefs = []
+                      hrefs: list[str]) -> dict[str, list]:
+        all_hrefs = {'succeeded': [], 'retry': []}
         queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks_pages_collector = [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
-            task_transship = asyncio.create_task(self.transship(all_pages_hrefs, queues['succeeded']))
+            tasks_transship = [asyncio.create_task(self.transship(a, b)) for a, b in zip(all_hrefs.values(), queues.values())] 
 
             await asyncio.gather(*tasks_pages_collector)
             
-            await queues['succeeded'].join()
-            task_transship.cancel()
+            for queue in queues.values():
+                await queue.join()
+            for task in tasks_transship:
+                task.cancel() 
 
             # print out results
-            print(f"Succeeded: {len(all_pages_hrefs)}\nFailed: {queues['retry'].qsize()}")
+            for key, value in all_hrefs.items():
+                print(f'{key}: {len(value)}') 
             ##
         
-        return queues
+        return all_hrefs 
     
     def main(self):
-        hrefs = self.extract_cities_hrefs()
-        queues = asyncio.run(self.collect(hrefs))
+        cities_hrefs = self.extract_cities_hrefs()
+        all_hrefs = asyncio.run(self.collect(cities_hrefs))
+
+        return all_hrefs 
 
     def retry(self):
         pass
@@ -81,9 +86,12 @@ class GeneralHomeExtractor():
         self.headers = headers
         self.pages_hrefs = pages_hrefs
 
+    async def transship(self) -> None:
+        pass
+
     async def homes_extractor(self, 
                               s: aiohttp.ClientSession, queue: asyncio.Queue, 
-                              href: str):
+                              href: str) -> None:
         self.headers['User-Agent'] = UserAgent().random
         async with s.get(href, headers=self.headers) as r:
             if (r.status == 200):
@@ -96,5 +104,12 @@ class GeneralHomeExtractor():
             else:
                 print('Failed') 
 
-    async def collect(self):
+    async def collect(self) -> None:
+        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
+            queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
+            tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, queues['succeeded'], href)) for href in self.pages_hrefs] 
+
+            await asyncio.run(*tasks_homes_extractor)
+
+    def main(self):
         pass
