@@ -84,3 +84,6 @@ class GeneralHomeExtractor():
                 print(len(nodes_script))
             else:
                 print('Failed') 
+
+    async def collect(self):
+        pass
