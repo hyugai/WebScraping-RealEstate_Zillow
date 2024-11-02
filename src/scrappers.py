@@ -44,11 +44,9 @@ class URLScrapper(TableTracker):
                 #queues['retry'].task_done()
     
     async def homes_collector(self, 
-                              s: aiohttp.ClientSession, queue: asyncio.Queue, 
-                              tasks_pages_collector: list[asyncio.Task]):
+                              s: aiohttp.ClientSession, queue: asyncio.Queue):
         count = 1
-        flag = [task.done() for task in tasks_pages_collector]
-        while not all(flag):
+        while True: 
             print(count, queue.qsize())
             pages = await queue.get() 
             print(pages)
@@ -64,22 +62,20 @@ class URLScrapper(TableTracker):
 #                else:
 #                    print('Failed') 
             count += 1
-#            queue.task_done()
-            flag = [task.done() for task in tasks_pages_collector]
+            queue.task_done()
 
     async def extract(self, 
                       hrefs: list[str]) -> dict[str, asyncio.Queue]:
         queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks_pages_collector = [asyncio.create_task(self.pages_collector(s, href, queues)) for href in hrefs]
-            task = asyncio.create_task(self.homes_collector(s, queues['succeeded'], tasks_pages_collector))
+            task_homes_collector = asyncio.create_task(self.homes_collector(s, queues['succeeded']))
 
-            await asyncio.gather(*tasks_pages_collector, task)
+            await asyncio.gather(*tasks_pages_collector)
 
-            print('OK')
-#            await queues['succeeded'].join()
-#            for queue in queues.values():
-#                await queue.join()
+            await queues['succeeded'].join()
+
+            task_homes_collector.cancel()
 
             # print out results
             print(f"Succeeded: {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
