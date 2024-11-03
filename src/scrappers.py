@@ -94,7 +94,7 @@ class GeneralHomeScrapper():
                               s: aiohttp.ClientSession, href: str, 
                               queues: dict[str, asyncio.Queue]) -> None:
         self.headers['User-Agent'] = UserAgent().random
-        async with s.get(href, headers=self.headers, proxy='http://68.178.168.41:80') as r:
+        async with s.get(href, headers=self.headers, proxy='http://131.153.163.28:34607') as r:
             if (r.status == 200):
                 print('OK')
                 content = await r.text() 
