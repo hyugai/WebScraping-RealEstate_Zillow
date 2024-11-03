@@ -1,4 +1,5 @@
 # libs
+import aiohttp.client_exceptions
 from libs import *
 from aiohttp_socks import ProxyConnector
 
@@ -94,19 +95,22 @@ class GeneralHomeScrapper():
                               s: aiohttp.ClientSession, href: str, 
                               queues: dict[str, asyncio.Queue]) -> None:
         self.headers['User-Agent'] = UserAgent().random
-        async with s.get(href, headers=self.headers, proxy='http://131.153.163.28:34607') as r:
-            if (r.status == 200):
-                print('OK')
-                content = await r.text() 
-                await queues['succeeded'].put(content)
+        try:
+            async with s.get(href, headers=self.headers, proxy='http://131.153.163.28:34607') as r:
+                if (r.status == 200):
+                    print('OK')
+                    content = await r.text() 
+                    await queues['succeeded'].put(content)
 
-#                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
-#                xpath = "//script[@type='application/json']"
-#                nodes_script = dom.xpath(xpath)
-#                print(len(nodes_script))
-            else:
-                content = await r.text()
-                await queues['retry'].put(href) 
+    #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+    #                xpath = "//script[@type='application/json']"
+    #                nodes_script = dom.xpath(xpath)
+    #                print(len(nodes_script))
+                else:
+                    content = await r.text()
+                    await queues['retry'].put(href) 
+        except (aiohttp.ConnectionTimeoutError, aiohttp.ClientOSError):
+            print('Failed')
 
     async def collect(self) -> None:
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
