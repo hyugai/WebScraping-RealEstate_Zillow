@@ -80,7 +80,7 @@ class URLScrapper():
         pass
 
 
-class GeneralHomeExtractor():
+class GeneralHomeScrapper():
     def __init__(self, 
                  headers: dict[str, str], pages_hrefs: list[str]) -> None:
         self.headers = headers
@@ -90,26 +90,35 @@ class GeneralHomeExtractor():
         pass
 
     async def homes_extractor(self, 
-                              s: aiohttp.ClientSession, queue: asyncio.Queue, 
-                              href: str) -> None:
+                              s: aiohttp.ClientSession, href: str, 
+                              queues: dict[str, asyncio.Queue]) -> None:
         self.headers['User-Agent'] = UserAgent().random
         async with s.get(href, headers=self.headers) as r:
             if (r.status == 200):
+                print('OK')
                 content = await r.text() 
+                await queues['succeeded'].put(content)
 
-                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
-                xpath = "//script[@type='application/json']"
-                nodes_script = dom.xpath(xpath)
-                print(len(nodes_script))
+#                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+#                xpath = "//script[@type='application/json']"
+#                nodes_script = dom.xpath(xpath)
+#                print(len(nodes_script))
             else:
-                print('Failed') 
+                content = await r.text()
+                print(content)
+                await queues['retry'].put(href) 
 
     async def collect(self) -> None:
-        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
+        async with aiohttp.ClientSession(headers={'Referer': UserAgent().random}) as s:
             queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
-            tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, queues['succeeded'], href)) for href in self.pages_hrefs] 
+            tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, href, queues)) for href in self.pages_hrefs] 
 
-            await asyncio.run(*tasks_homes_extractor)
+            await asyncio.gather(*tasks_homes_extractor)
+
+            # print results
+            for name, queue in queues.items():
+                print(f'{name}: {queue.qsize()}')
+            ##
 
     def main(self):
-        pass
+        asyncio.run(self.collect()) 

@@ -21,4 +21,4 @@ ZILLOW = 'https://www.zillow.com'
 
 # usr libs
 from trackers import TableTracker
-from scrappers import URLScrapper
+from scrappers import URLScrapper, GeneralHomeScrapper 
