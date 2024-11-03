@@ -8,10 +8,11 @@ if path_to_src not in sys.path:
 from libs import *
 
 # exp: URLScrapper
-def url_scrapper():
-    path = cwd + 'db/real_estate.db'
-    name = 'city_url'
-    scrapper = URLScrapper(ZILLOW_HEADERS)
-    all_hrefs = scrapper.main()
+scrapper = URLScrapper(ZILLOW_HEADERS)
+all_hrefs = scrapper.main()
 
-url_scrapper()
+path = cwd + '/tests/db/real_estate.db'
+with sqlite3.connect(path) as conn:
+    cur = conn.cursor()
+    cur.execute('CREATE TABLE IF NOT EXISTS pages_hrefs (href TEXT UNIQUE)')
+    cur.executemany('INSERT OR REPLACE INTO pages_hrefs VALUES (?)', [(href,) for href in all_hrefs['succeeded']])
