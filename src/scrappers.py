@@ -1,6 +1,5 @@
 # libs
 from libs import *
-from aiohttp_socks import ProxyConnector
 
 # URLsCollector
 class URLScrapper():
@@ -109,8 +108,7 @@ class GeneralHomeScrapper():
                 await queues['retry'].put(href) 
 
     async def collect(self) -> None:
-        connector = ProxyConnector.from_url('socks5://127.0.0.1:9050')
-        async with aiohttp.ClientSession(headers={'Referer': UserAgent().random}, connector=connector) as s:
+        async with aiohttp.ClientSession(headers={'Referer': UserAgent().random}) as s:
             queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
             tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, href, queues)) for href in self.pages_hrefs] 
 
