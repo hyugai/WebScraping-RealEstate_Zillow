@@ -8,8 +8,13 @@ from fake_useragent import UserAgent
 import aiohttp
 import asyncio
 
+# data structure
+import numpy as np
+import pandas as pd
+
 # others
 import re, sqlite3
+from datetime import datetime
 
 # zillow's configs
 ZILLOW_HEADERS = {
