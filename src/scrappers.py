@@ -105,7 +105,6 @@ class GeneralHomeScrapper():
 #                print(len(nodes_script))
             else:
                 content = await r.text()
-                print(content)
                 await queues['retry'].put(href) 
 
     async def collect(self) -> None:
