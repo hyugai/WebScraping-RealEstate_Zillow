@@ -8,8 +8,8 @@ if path_to_src not in sys.path:
 from libs import *
 
 # exp: URLScrapper
-scrapper = URLScrapper(ZILLOW_HEADERS)
-all_hrefs = scrapper.main()
+scraper = URLScraper(ZILLOW_HEADERS)
+all_hrefs = scraper.main()
 
 path = cwd + '/tests/db/real_estate.db'
 with sqlite3.connect(path) as conn:

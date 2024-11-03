@@ -14,5 +14,5 @@ with sqlite3.connect(db_path) as conn:
     cur.execute('SELECT * FROM pages_hrefs')
     pages_hrefs = [row[0] for row in cur.fetchall()]
     
-home_scrapper = GeneralHomeScrapper(ZILLOW_HEADERS, pages_hrefs)
-home_scrapper.main()
+home_scraper = GeneralHomeScraper(ZILLOW_HEADERS, pages_hrefs)
+home_scraper.main()

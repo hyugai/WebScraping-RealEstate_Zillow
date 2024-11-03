@@ -4,7 +4,7 @@ from libs import *
 from aiohttp_socks import ProxyConnector
 
 # URLsCollector
-class URLScrapper():
+class URLScraper():
     def __init__(self,
                  headers: dict[str, str]) -> None:
         self.headers = headers
@@ -82,7 +82,7 @@ class URLScrapper():
         pass
 
 
-class GeneralHomeScrapper():
+class GeneralHomeScraper():
     def __init__(self, 
                  headers: dict[str, str], pages_hrefs: list[str]) -> None:
         self.headers = headers
