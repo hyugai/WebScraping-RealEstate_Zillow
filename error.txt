@@ -1,0 +1,67 @@
+Traceback (most recent call last):
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 1091, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohappyeyeballs/impl.py", line 82, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohappyeyeballs/impl.py", line 174, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/asyncio/selector_events.py", line 638, in sock_connect
+    return await fut
+           ^^^^^^^^^
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/client.py", line 663, in _request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 563, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 1030, in _create_connection
+    _, proto = await self._create_proxy_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 1391, in _create_proxy_connection
+    transport, proto = await self._create_direct_connection(
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 1366, in _create_direct_connection
+    raise last_exc
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 1335, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/connector.py", line 1088, in _wrap_create_connection
+    async with ceil_timeout(
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/xxo/lab/working/tests/scrap_generalHomesInfo.py", line 18, in <module>
+    home_scrapper.main()
+  File "/home/xxo/lab/working/src/scrappers.py", line 123, in main
+    asyncio.run(self.collect()) 
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/xxo/lab/working/src/scrappers.py", line 115, in collect
+    await asyncio.gather(*tasks_homes_extractor)
+  File "/home/xxo/lab/working/src/scrappers.py", line 96, in homes_extractor
+    async with s.get(href, headers=self.headers, proxy="http://131.153.163.28:20935") as r:
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/client.py", line 1359, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/xxo/miniconda3/envs/web_scrapping/lib/python3.11/site-packages/aiohttp/client.py", line 667, in _request
+    raise ConnectionTimeoutError(
+aiohttp.client_exceptions.ConnectionTimeoutError: Connection timeout to host https://www.zillow.com/jacksonville-fl/
