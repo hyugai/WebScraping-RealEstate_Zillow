@@ -58,8 +58,9 @@ class GeonodeScraper():
     params = {'limit': 500, 'sort_by': 'lastChecked', 'sort_type': 'desc'}
 
     def __init__(self, 
-                 headers: dict[str, str]) -> None:
+                 headers: dict[str, str], csv_path: str) -> None:
         self.headers = headers 
+        self.csv_path = csv_path
 
     async def calculate_numberOfPages(self,
                                       p: Playwright):
@@ -86,18 +87,35 @@ class GeonodeScraper():
             content = await r.text()
             await queue.put(json.loads(content)['data'])
 
-    async def collect(self):
+    async def transship(self, 
+                        all_jsons: list, queue: asyncio.Queue):
+        while True:
+            proxies = await queue.get() 
+            all_jsons.extend(proxies)
+            
+            queue.task_done()
+
+    async def collect(self) -> list[dict]:
         async with async_playwright() as p:
             task_calculate = asyncio.create_task(self.calculate_numberOfPages(p)) 
             numberOf_pages = await task_calculate
             
+        all_jsons = []
         queue = asyncio.Queue()
         async with aiohttp.ClientSession() as s:
             tasks_extract_proxies = [asyncio.create_task(self.extract_json(s, page, queue)) for page in range(1, numberOf_pages + 1)] 
+            task_transship = asyncio.create_task(self.transship(all_jsons, queue))
+
             await asyncio.gather(*tasks_extract_proxies)
 
-    def main(sefl):
-        asyncio.run(sefl.collect())
+            await queue.join()
+            task_transship.cancel()
+
+        return all_jsons
+
+    def main(self):
+        all_jsons = asyncio.run(self.collect())
+        pd.json_normalize(all_jsons).to_csv(self.csv_path, index=False)
 
 # https://proxyscrape.com/free-proxy-list
 class ProxyScrapeScraper():
