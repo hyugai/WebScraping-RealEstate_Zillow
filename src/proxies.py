@@ -1,5 +1,6 @@
 # libs
 from libs import *
+import json
 
 # https://free-proxy-list.net/
 class FreeProxyListScraper():
@@ -51,9 +52,11 @@ class FreeProxyListScraper():
 
 # https://geonode.com/free-proxy-list
 class GeonodeScraper():
-    global homepage, api_endpoint
+    global homepage, api_endpoint, params
     homepage = 'https://geonode.com/free-proxy-list'
     api_endpoint = 'https://proxylist.geonode.com/api/proxy-list'
+    params = {'limit': 500, 'sort_by': 'lastChecked', 'sort_type': 'desc'}
+
     def __init__(self, 
                  headers: dict[str, str]) -> None:
         self.headers = headers 
@@ -75,6 +78,14 @@ class GeonodeScraper():
 
         return numberOf_pages
 
+    async def extract_json(self, 
+                           s: aiohttp.ClientSession, page: int, 
+                           queue: asyncio.Queue) -> None:
+        params['page'] = page 
+        async with s.get(api_endpoint, params=params) as r:
+            content = await r.text()
+            await queue.put(json.loads(content))
+
     async def extract_api_urls(self):
         async with async_playwright() as p:
             task_calculate = asyncio.create_task(self.calculate_numberOfPages(p)) 
@@ -82,9 +93,7 @@ class GeonodeScraper():
             
         params = {'limit': 500, 'page': 1, 'sort_by': 'lastChecked', 'sort_type': 'desc'}
         async with aiohttp.ClientSession() as s:
-            async with s.get(api_endpoint, params=params) as r:
-                content = await r.text()
-                print(content)
+            pass
             
     def main(sefl):
         asyncio.run(sefl.extract_api_urls())
