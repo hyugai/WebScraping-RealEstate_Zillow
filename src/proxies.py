@@ -64,7 +64,8 @@ class GeonodeScraper():
         context = await browser.new_context(user_agent=UserAgent().random)
         page = await context.new_page()
         
-        await page.goto(homepage)
+        await page.goto(homepage, wait_until='domcontentloaded')
+        await asyncio.sleep(5)
 
         xpath = "//p[text()='Proxies online']/parent::span/following-sibling::p"
         node_p = page.locator(selector=f"xpath={xpath}")
