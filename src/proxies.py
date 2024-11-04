@@ -68,7 +68,12 @@ class GeonodeScraper():
 
         xpath = "//p[text()='Proxies online']/parent::span/following-sibling::p"
         node_p = page.locator(selector=f"xpath={xpath}")
-        print(await node_p.inner_text())
+        
+        numberOf_onlineProxies = await node_p.inner_text()
+        quotient, _ = divmod(int(numberOf_onlineProxies.replace(',', '')), 500)
+        numberOf_pages = quotient + 1
+
+        return numberOf_pages
 
     async def extract_api_urls(self):
         async with async_playwright() as p:
