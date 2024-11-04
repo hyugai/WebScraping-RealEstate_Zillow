@@ -17,9 +17,10 @@ def scrap_free_proxy_list():
     scraper.load()
 
 # https://geonode.com/free-proxy-list
-headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
-           'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8',
-           'Referer': 'https://www.google.com', 'Connection': 'keep-alive'}
-csv_path = (Path.cwd()/'tests'/'resource'/'proxies'/'geonode.csv').as_posix()
-scraper = GeonodeScraper(headers, csv_path)
-scraper.main()
+def scrap_geonode():
+    headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
+            'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8',
+            'Referer': 'https://www.google.com', 'Connection': 'keep-alive'}
+    csv_path = (Path.cwd()/'tests'/'resource'/'proxies'/'geonode.csv').as_posix()
+    scraper = GeonodeScraper(headers, csv_path)
+    scraper.main()
