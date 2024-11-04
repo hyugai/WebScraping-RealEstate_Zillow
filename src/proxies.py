@@ -89,12 +89,14 @@ class GeonodeScraper():
     async def extract_api_urls(self):
         async with async_playwright() as p:
             task_calculate = asyncio.create_task(self.calculate_numberOfPages(p)) 
-            await task_calculate
+            numberOf_pages = await task_calculate
+            print(numberOf_pages)
             
-        params = {'limit': 500, 'page': 1, 'sort_by': 'lastChecked', 'sort_type': 'desc'}
+        queue = asyncio.Queue()
         async with aiohttp.ClientSession() as s:
-            pass
-            
+            tasks_extract_proxies = [asyncio.create_task(self.extract_json(s, page, queue)) for page in range(1, numberOf_pages + 1)] 
+            await asyncio.gather(*tasks_extract_proxies)
+
     def main(sefl):
         asyncio.run(sefl.extract_api_urls())
 
