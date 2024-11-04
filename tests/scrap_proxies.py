@@ -15,3 +15,9 @@ def scrap_free_proxy_list():
 
     scraper = FreeProxyListScraper(headers, csv_path) 
     scraper.load()
+
+headers = {'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
+           'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8',
+           'Referer': 'https://www.google.com', 'Connection': 'keep-alive'}
+scraper = GeonodeScraper(headers)
+scraper.main()

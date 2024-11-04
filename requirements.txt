@@ -2,6 +2,8 @@ requests
 requests[socks]
 requests[security]
 aiohttp
+playwright
+playwright_stealth
 stem
 fake-useragent
 bs4

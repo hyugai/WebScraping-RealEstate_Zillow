@@ -51,8 +51,32 @@ class FreeProxyListScraper():
 
 # https://geonode.com/free-proxy-list
 class GeonodeScraper():
-    def __init__(self) -> None:
-        pass
+    global homepage, api_endpoint
+    homepage = 'https://geonode.com/free-proxy-list'
+
+    def __init__(self, 
+                 headers: dict[str, str]) -> None:
+        self.headers = headers 
+
+    async def calculate_numberOfPages(self,
+                                      p: Playwright):
+        browser = await p.chromium.launch(headless=False) 
+        context = await browser.new_context(user_agent=UserAgent().random)
+        page = await context.new_page()
+        
+        await page.goto(homepage)
+
+        xpath = "//p[text()='Proxies online']/parent::span/following-sibling::p"
+        node_p = page.locator(selector=f"xpath={xpath}")
+        print(await node_p.inner_text())
+
+    async def extract_api_urls(self):
+        async with async_playwright() as p:
+            task_calculate = asyncio.create_task(self.calculate_numberOfPages(p)) 
+            await task_calculate
+            
+    def main(sefl):
+        asyncio.run(sefl.extract_api_urls())
 
 # https://proxyscrape.com/free-proxy-list
 class ProxyScrapeScraper():

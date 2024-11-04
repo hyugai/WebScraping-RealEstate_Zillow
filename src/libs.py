@@ -8,6 +8,9 @@ from fake_useragent import UserAgent
 import aiohttp
 import asyncio
 
+# playwright
+from playwright.async_api import async_playwright, Playwright, Page
+
 # data structure
 import numpy as np
 import pandas as pd
