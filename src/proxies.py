@@ -86,7 +86,7 @@ class GeonodeScraper():
             content = await r.text()
             await queue.put(json.loads(content))
 
-    async def extract_api_urls(self):
+    async def collect(self):
         async with async_playwright() as p:
             task_calculate = asyncio.create_task(self.calculate_numberOfPages(p)) 
             numberOf_pages = await task_calculate
@@ -98,7 +98,7 @@ class GeonodeScraper():
             await asyncio.gather(*tasks_extract_proxies)
 
     def main(sefl):
-        asyncio.run(sefl.extract_api_urls())
+        asyncio.run(sefl.collect())
 
 # https://proxyscrape.com/free-proxy-list
 class ProxyScrapeScraper():
