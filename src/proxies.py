@@ -84,13 +84,12 @@ class GeonodeScraper():
         params['page'] = page 
         async with s.get(api_endpoint, params=params) as r:
             content = await r.text()
-            await queue.put(json.loads(content))
+            await queue.put(json.loads(content)['data'])
 
     async def collect(self):
         async with async_playwright() as p:
             task_calculate = asyncio.create_task(self.calculate_numberOfPages(p)) 
             numberOf_pages = await task_calculate
-            print(numberOf_pages)
             
         queue = asyncio.Queue()
         async with aiohttp.ClientSession() as s:
