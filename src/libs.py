@@ -18,6 +18,8 @@ import pandas as pd
 # others
 import re, sqlite3
 from datetime import datetime
+from io import StringIO
+from tabulate2 import tabulate
 
 # zillow's configs
 ZILLOW_HEADERS = {
