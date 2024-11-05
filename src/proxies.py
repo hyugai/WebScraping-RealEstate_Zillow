@@ -116,8 +116,3 @@ class GeonodeScraper():
     def main(self):
         all_jsons = asyncio.run(self.collect())
         pd.json_normalize(all_jsons).to_csv(self.csv_path, index=False)
-
-# https://proxyscrape.com/free-proxy-list
-class ProxyScrapeScraper():
-    def __init__(self) -> None:
-        pass
