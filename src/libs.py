@@ -22,12 +22,12 @@ from datetime import datetime
 # zillow's configs
 ZILLOW_HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
-    'Accept-Encoding': 'gzip,deflate,sdch',
-    'Accept-Language': 'en-US,en;q=0.8'
+    'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
+    'Referer': 'https://www.google.com.vn'
 }
 ZILLOW = 'https://www.zillow.com'
 
 # usr libs
 from trackers import * 
-from scrapers import * 
-from proxies import * 
+from zillow import URLScraper, GeneralHomeScraper 
+from proxies import FreeProxyListScraper, GeonodeScraper 

@@ -8,7 +8,7 @@ if src_path not in sys.path:
 from libs import *
 
 # exp
-db_path = (Path.cwd()/'tests'/'db'/'real_estate.db').as_posix()
+db_path = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
 with sqlite3.connect(db_path) as conn:
     cur = conn.cursor()
     cur.execute('SELECT * FROM pages_hrefs')

@@ -6,8 +6,9 @@ from aiohttp_socks import ProxyConnector
 # URLsCollector
 class URLScraper():
     def __init__(self,
-                 headers: dict[str, str]) -> None:
+                 headers: dict[str, str], proxies_pool: list) -> None:
         self.headers = headers
+        self.proxies_pool = proxies_pool
 
     def extract_cities_hrefs(self) -> list[str]:
         with requests.Session() as s:
@@ -22,7 +23,7 @@ class URLScraper():
 
                 return full_hrefs
             else:
-                raise ValueError(f'Failed fetching (error code: {r.status_code})')
+                raise Exception(f'Failed fetching (error code: {r.status_code})')
 
     async def extract_pages_hrefs(self,
                                 s: aiohttp.ClientSession, city_href: str, 
@@ -96,7 +97,7 @@ class GeneralHomeScraper():
                               queues: dict[str, asyncio.Queue]) -> None:
         self.headers['User-Agent'] = UserAgent().random
         try:
-            async with s.get(href, headers=self.headers, proxy='http://131.153.163.28:34607') as r:
+            async with s.get(href, headers=self.headers) as r:
                 if (r.status == 200):
                     print('OK')
                     content = await r.text() 
