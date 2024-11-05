@@ -24,3 +24,9 @@ def scrap_geonode():
     csv_path = (Path.cwd()/'tests'/'resource'/'proxies'/'geonode.csv').as_posix()
     scraper = GeonodeScraper(headers, csv_path)
     scraper.main()
+
+
+# https://proxyscrape.com/free-proxy-list
+csv_path = (Path.cwd()/'tests'/'resource'/'proxies'/'proxyscrape.csv')
+pd.read_csv('https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=csv')\
+    .to_csv(csv_path, index=False)
