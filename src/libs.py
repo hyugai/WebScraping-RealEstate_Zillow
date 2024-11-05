@@ -28,6 +28,6 @@ ZILLOW_HEADERS = {
 ZILLOW = 'https://www.zillow.com'
 
 # usr libs
-from trackers import TableTracker
-from scrapers import URLScraper, GeneralHomeScraper 
-from proxies import FreeProxyListScraper, GeonodeScraper, ProxyScrapeScraper
+from trackers import * 
+from scrapers import * 
+from proxies import * 

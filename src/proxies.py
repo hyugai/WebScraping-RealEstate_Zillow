@@ -83,7 +83,8 @@ class GeonodeScraper():
                            s: aiohttp.ClientSession, page: int, 
                            queue: asyncio.Queue) -> None:
         params['page'] = page 
-        async with s.get(api_endpoint, params=params) as r:
+        self.headers['User-Agent'] = UserAgent().random
+        async with s.get(api_endpoint, params=params, headers=self.headers) as r:
             content = await r.text()
             await queue.put(json.loads(content)['data'])
 
