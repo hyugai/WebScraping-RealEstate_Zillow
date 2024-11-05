@@ -33,3 +33,4 @@ ZILLOW = 'https://www.zillow.com'
 from trackers import * 
 from zillow import URLScraper, GeneralHomeScraper 
 from proxies import FreeProxyListScraper, GeonodeScraper 
+from reports import DataReport
