@@ -16,7 +16,8 @@ import numpy as np
 import pandas as pd
 
 # others
-import re, json, sqlite3, random
+import re, json, sqlite3
+import time, random
 from pathlib import Path
 from datetime import datetime
 from io import StringIO

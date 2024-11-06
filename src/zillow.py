@@ -105,18 +105,17 @@ class GeneralHomeScraper():
                         print('OK')
                         content = await r.text() 
                         await queues['succeeded'].put(content)
-
-        #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
-        #                xpath = "//script[@type='application/json']"
-        #                nodes_script = dom.xpath(xpath)
-        #                print(len(nodes_script))
+                        
+                        break
                     else:
                         print(f'Failed fetching (error code: {r.status})')
 
-            except (aiohttp.ConnectionTimeoutError, aiohttp.ClientOSError):
+            except Exception:
                 pass
 
             finally:
+                if trial == 5:
+                    await queues['retry'].put(href)
                 trial += 1
 
     async def collect(self) -> None:
@@ -132,4 +131,11 @@ class GeneralHomeScraper():
             ##
 
     def main(self):
+        start = time.time() 
         asyncio.run(self.collect()) 
+        print(f'Finished in: {time.time() - start}')
+
+        #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+        #                xpath = "//script[@type='application/json']"
+        #                nodes_script = dom.xpath(xpath)
+        #                print(len(nodes_script))
