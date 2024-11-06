@@ -45,6 +45,9 @@ def handle_string():
         text = tmp_dict 
 
     homes_info = text[key_to_find]
-    pd.json_normalize(homes_info).to_csv('fee.csv', index=False)
+    df = pd.json_normalize(homes_info)
+    df.drop(['carouselPhotos', 'imgSrc'], axis=1, inplace=True)
+    df.columns = [column.replace('.', '_') for column in df.columns.tolist()]
+    print(tabulate(df.head(), headers='keys', tablefmt='psql'))
     
 handle_string()
