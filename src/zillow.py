@@ -122,11 +122,6 @@ class GeneralHomeScraper():
 
             await asyncio.gather(*tasks_homes_extractor)
 
-            # print results
-            for name, queue in queues.items():
-                print(f'{name}: {queue.qsize()}')
-            ##
-
     def main(self, 
              pages_hrefs: list[str]) -> None:
         start = time.time() 
