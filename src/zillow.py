@@ -84,10 +84,8 @@ class URLScraper():
 
 class GeneralHomeScraper():
     def __init__(self, 
-                 headers: dict[str, str], pages_hrefs: list[str], 
-                 proxies_pool: list[str]) -> None:
+                 headers: dict[str, str], proxies_pool: list[str]) -> None:
         self.headers = headers
-        self.pages_hrefs = pages_hrefs
         self.proxies_pool = proxies_pool
 
     async def transship(self) -> None:
@@ -109,19 +107,18 @@ class GeneralHomeScraper():
                         break
                     else:
                         print(f'Failed fetching (error code: {r.status})')
-
             except Exception:
                 pass
-
             finally:
-                if trial == 5:
+                if trial == numberOf_trials:
                     await queues['retry'].put(href)
                 trial += 1
 
-    async def collect(self) -> None:
+    async def collect(self, 
+                      pages_hrefs: list[str]) -> None:
         async with aiohttp.ClientSession(headers={'Referer': 'https://www.google.com.vn'}) as s:
             queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
-            tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, href, queues)) for href in self.pages_hrefs] 
+            tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, href, queues)) for href in pages_hrefs] 
 
             await asyncio.gather(*tasks_homes_extractor)
 
@@ -130,10 +127,11 @@ class GeneralHomeScraper():
                 print(f'{name}: {queue.qsize()}')
             ##
 
-    def main(self):
+    def main(self, 
+             pages_hrefs: list[str]) -> None:
         start = time.time() 
-        asyncio.run(self.collect()) 
-        print(f'Finished in: {time.time() - start}')
+        asyncio.run(self.collect(pages_hrefs))
+        print(f'Finished in: {time.time() - start}s')
 
         #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
         #                xpath = "//script[@type='application/json']"

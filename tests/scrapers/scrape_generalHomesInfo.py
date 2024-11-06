@@ -19,5 +19,5 @@ csv_path = (Path.cwd()/'tests'/'resource'/'proxies'/'free_proxy_list.csv').as_po
 df_proxies = pd.read_csv(csv_path)
 proxies_pool = [f"http://{ip}:{port}" for ip, port in zip(df_proxies['ip_address'], df_proxies['port'])]    
 
-home_scraper = GeneralHomeScraper(ZILLOW_HEADERS, pages_hrefs, proxies_pool)
-home_scraper.main()
+home_scraper = GeneralHomeScraper(ZILLOW_HEADERS, proxies_pool)
+home_scraper.main(pages_hrefs)
