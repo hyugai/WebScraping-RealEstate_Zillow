@@ -33,6 +33,16 @@ def scrap_1Page():
 
     asyncio.run(fetch_url())
 
+def find_requiredNode():
+    path = (Path.cwd()/'tests'/'logs'/'homes_scraper.txt').as_posix()
+    with open(path, 'r') as f:
+        content = f.read()
+    dom = etree.HTML(content)
+    
+    xpath = "//script[@type='application/json']"
+    nodes_script = dom.xpath(xpath)
+    print(json.loads(nodes_script[2].text))
+
 def handle_string():
     with open('test.txt', 'r') as f:
         text = f.read()
@@ -49,5 +59,5 @@ def handle_string():
     df.drop(['carouselPhotos', 'imgSrc'], axis=1, inplace=True)
     df.columns = [column.replace('.', '_') for column in df.columns.tolist()]
     print(tabulate(df.head(), headers='keys', tablefmt='psql'))
-    
-handle_string()
+
+find_requiredNode()

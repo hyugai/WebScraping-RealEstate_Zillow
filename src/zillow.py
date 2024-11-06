@@ -102,7 +102,19 @@ class GeneralHomeScraper():
                     if (r.status == 200):
                         print('OK')
                         content = await r.text() 
-                        await queues['succeeded'].put(content)
+                        dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+
+                        xpath = "//script[@type='application/json']"
+                        nodes_script = dom.xpath(xpath)
+
+                        unfilteredJSON: dict = json.load(nodes_script[2].text)
+                        key_to_find = 'listResults'
+                        while key_to_find not in unfilteredJSON:
+                            tmp_dict = {}
+                            [tmp_dict.update(value) for value in unfilteredJSON.values() if isinstance(value, dict)]
+                        homes_asJSON = unfilteredJSON[key_to_find]
+
+                        await queues['succeeded'].put(homes_asJSON)
                         
                         break
                     else:
@@ -127,8 +139,3 @@ class GeneralHomeScraper():
         start = time.time() 
         asyncio.run(self.collect(pages_hrefs))
         print(f'Finished in: {time.time() - start}s')
-
-        #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
-        #                xpath = "//script[@type='application/json']"
-        #                nodes_script = dom.xpath(xpath)
-        #                print(len(nodes_script))
