@@ -88,8 +88,13 @@ class GeneralHomeScraper():
         self.headers = headers
         self.proxies_pool = proxies_pool
 
-    async def transship(self) -> None:
-        pass
+    async def transship(self,
+                        qallHomes: list, queue: asyncio.Queue) -> None:
+        while True:
+            homes_asJSON = await queue.get() 
+            allHomes.extend([(home['id'], json.dumps(home)) for home in homes_asJSON])
+
+            queue.task_done()
 
     async def homes_extractor(self, 
                               s: aiohttp.ClientSession, href: str, 
@@ -112,7 +117,7 @@ class GeneralHomeScraper():
                         while key_to_find not in unfilteredJSON:
                             tmp_dict = {}
                             [tmp_dict.update(value) for value in unfilteredJSON.values() if isinstance(value, dict)]
-                        homes_asJSON = unfilteredJSON[key_to_find]
+                        homes_asJSON: list[dict] = unfilteredJSON[key_to_find]
 
                         await queues['succeeded'].put(homes_asJSON)
                         
