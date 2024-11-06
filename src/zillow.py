@@ -95,7 +95,7 @@ class GeneralHomeScraper():
 
     async def homes_extractor(self, 
                               s: aiohttp.ClientSession, href: str, 
-                              queues: dict[str, asyncio.Queue], numberOf_trials: int=5) -> None:
+                              queues: dict[str, asyncio.Queue], numberOf_trials: int=3) -> None:
         trial = 1
         while trial <= numberOf_trials:
             self.headers['User-Agent'] = UserAgent().random
