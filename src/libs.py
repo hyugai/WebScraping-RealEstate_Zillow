@@ -16,7 +16,8 @@ import numpy as np
 import pandas as pd
 
 # others
-import re, sqlite3
+import re, json, sqlite3, random
+from pathlib import Path
 from datetime import datetime
 from io import StringIO
 from tabulate2 import tabulate
@@ -32,5 +33,5 @@ ZILLOW = 'https://www.zillow.com'
 # usr libs
 from trackers import * 
 from zillow import URLScraper, GeneralHomeScraper 
-from proxies import FreeProxyListScraper, GeonodeScraper 
+from proxies import FreeProxyListScraper, GeonodeScraper, scrape_freeProxyList, scrape_geonode, scrape_proxyScrape
 from reports import DataReport

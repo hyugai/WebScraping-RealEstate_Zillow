@@ -1,7 +1,6 @@
 # libs
 import aiohttp.client_exceptions
 from libs import *
-from aiohttp_socks import ProxyConnector
 
 # URLsCollector
 class URLScraper():
@@ -85,36 +84,43 @@ class URLScraper():
 
 class GeneralHomeScraper():
     def __init__(self, 
-                 headers: dict[str, str], pages_hrefs: list[str]) -> None:
+                 headers: dict[str, str], pages_hrefs: list[str], 
+                 proxies_pool: list[str]) -> None:
         self.headers = headers
         self.pages_hrefs = pages_hrefs
+        self.proxies_pool = proxies_pool
 
     async def transship(self) -> None:
         pass
 
     async def homes_extractor(self, 
                               s: aiohttp.ClientSession, href: str, 
-                              queues: dict[str, asyncio.Queue]) -> None:
-        self.headers['User-Agent'] = UserAgent().random
-        try:
-            async with s.get(href, headers=self.headers) as r:
-                if (r.status == 200):
-                    print('OK')
-                    content = await r.text() 
-                    await queues['succeeded'].put(content)
+                              queues: dict[str, asyncio.Queue], numberOf_trials: int=5) -> None:
+        trial = 1
+        while trial <= numberOf_trials:
+            self.headers['User-Agent'] = UserAgent().random
+            try:
+                async with s.get(href, headers=self.headers, proxy=random.choice(self.proxies_pool)) as r:
+                    if (r.status == 200):
+                        print('OK')
+                        content = await r.text() 
+                        await queues['succeeded'].put(content)
 
-    #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
-    #                xpath = "//script[@type='application/json']"
-    #                nodes_script = dom.xpath(xpath)
-    #                print(len(nodes_script))
-                else:
-                    content = await r.text()
-                    await queues['retry'].put(href) 
-        except (aiohttp.ConnectionTimeoutError, aiohttp.ClientOSError):
-            print('Failed')
+        #                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+        #                xpath = "//script[@type='application/json']"
+        #                nodes_script = dom.xpath(xpath)
+        #                print(len(nodes_script))
+                    else:
+                        print(f'Failed fetching (error code: {r.status})')
+
+            except (aiohttp.ConnectionTimeoutError, aiohttp.ClientOSError):
+                pass
+
+            finally:
+                trial += 1
 
     async def collect(self) -> None:
-        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
+        async with aiohttp.ClientSession(headers={'Referer': 'https://www.google.com.vn'}) as s:
             queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
             tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, href, queues)) for href in self.pages_hrefs] 
 
