@@ -106,7 +106,8 @@ class GeneralHomeScraper():
 
     async def homes_extractor(self, 
                               s: aiohttp.ClientSession, href: str, 
-                              queues: dict[str, asyncio.Queue], numberOf_trials: int=3) -> None:
+                              queues: dict[str, asyncio.Queue], numberOf_trials: int=1) -> None:
+
         trial = 1
         while trial <= numberOf_trials:
             self.headers['User-Agent'] = UserAgent().random
@@ -117,14 +118,17 @@ class GeneralHomeScraper():
                         content = await r.text() 
                         dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
 
-                        xpath = "//script[@type='application/json']"
+                        xpath = "//script[@type='application/json' and @id='__NEXT_DATA__']"
                         nodes_script = dom.xpath(xpath)
+                        print(len(nodes_script))
 
-                        unfilteredJSON: dict = json.loads(nodes_script[2].text)
+                        unfilteredJSON: dict = json.loads(nodes_script[0].text)
                         key_to_find = 'listResults'
                         while key_to_find not in unfilteredJSON:
                             tmp_dict = {}
                             [tmp_dict.update(value) for value in unfilteredJSON.values() if isinstance(value, dict)]
+                            unfilteredJSON = tmp_dict
+                            print(tmp_dict.keys())
                         homes_asJSON: list[dict] = unfilteredJSON[key_to_find]
 
                         await queues['succeeded'].put(homes_asJSON)
