@@ -88,12 +88,20 @@ class GeneralHomeScraper():
         self.headers = headers
         self.proxies_pool = proxies_pool
 
-    async def transship(self,
-                        qallHomes: list, queue: asyncio.Queue) -> None:
+    async def transship_collectedHomes(self,
+                                       collectedHomes: list, queue: asyncio.Queue) -> None:
         while True:
             homes_asJSON = await queue.get() 
-            allHomes.extend([(home['id'], json.dumps(home)) for home in homes_asJSON])
+            collectedHomes.extend([(home['id'], json.dumps(home)) for home in homes_asJSON])
 
+            queue.task_done()
+
+    async def transship_hrefsToRetry(self,
+                                     hrefsToRetry: list, queue: asyncio.Queue) -> None:
+        while True:
+            href = await queue.get() 
+            hrefsToRetry.append(href)
+            
             queue.task_done()
 
     async def homes_extractor(self, 
@@ -105,14 +113,14 @@ class GeneralHomeScraper():
             try:
                 async with s.get(href, headers=self.headers, proxy=random.choice(self.proxies_pool)) as r:
                     if (r.status == 200):
-                        print('OK')
+                        print(f'Trial {trial}: OK')
                         content = await r.text() 
                         dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
 
                         xpath = "//script[@type='application/json']"
                         nodes_script = dom.xpath(xpath)
 
-                        unfilteredJSON: dict = json.load(nodes_script[2].text)
+                        unfilteredJSON: dict = json.loads(nodes_script[2].text)
                         key_to_find = 'listResults'
                         while key_to_find not in unfilteredJSON:
                             tmp_dict = {}
@@ -123,24 +131,37 @@ class GeneralHomeScraper():
                         
                         break
                     else:
-                        print(f'Failed fetching (error code: {r.status})')
-            except Exception:
-                pass
+                        print(f'Trial {trial}: Failed fetching (error code: {r.status})')
+            except Exception as e:
+                print(f'Trial {trial}: {e}') 
             finally:
                 if trial == numberOf_trials:
                     await queues['retry'].put(href)
                 trial += 1
 
     async def collect(self, 
-                      pages_hrefs: list[str]) -> None:
+                      pages_hrefs: list[str]) -> tuple[list, list]:
+        queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
+        collectedHomes, hrefsToRetry = [], []
+
         async with aiohttp.ClientSession(headers={'Referer': 'https://www.google.com.vn'}) as s:
-            queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
             tasks_homes_extractor = [asyncio.create_task(self.homes_extractor(s, href, queues)) for href in pages_hrefs] 
+            tasks_transship = [asyncio.create_task(self.transship_collectedHomes(collectedHomes, queues['succeeded'])), 
+                               asyncio.create_task(self.transship_hrefsToRetry(hrefsToRetry, queues['retry']))]
 
             await asyncio.gather(*tasks_homes_extractor)
+            
+            for queue in queues.values():
+                await queue.join()
+            for task in tasks_transship:
+                task.cancel()
+
+        return collectedHomes, hrefsToRetry
 
     def main(self, 
-             pages_hrefs: list[str]) -> None:
+             pages_hrefs: list[str]) -> tuple[list, list]:
         start = time.time() 
-        asyncio.run(self.collect(pages_hrefs))
+        collectedHomes, hrefsToRetry = asyncio.run(self.collect(pages_hrefs))
         print(f'Finished in: {time.time() - start}s')
+
+        return collectedHomes, hrefsToRetry

@@ -60,4 +60,12 @@ def handle_string():
     df.columns = [column.replace('.', '_') for column in df.columns.tolist()]
     print(tabulate(df.head(), headers='keys', tablefmt='psql'))
 
-find_requiredNode()
+def retrieve():
+    db_path = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db')
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        cur.execute('SELECT * FROM homes_as_json')
+        rows = cur.fetchall()
+        print(rows)
+
+retrieve()
