@@ -81,7 +81,7 @@ class URLScraper():
     def retry(self):
         pass
 
-
+# class GeneralHomeScraper
 class GeneralHomeScraper():
     def __init__(self, 
                  headers: dict[str, str], proxies_pool: list[str]) -> None:
@@ -106,7 +106,7 @@ class GeneralHomeScraper():
 
     async def homes_extractor(self, 
                               s: aiohttp.ClientSession, href: str, 
-                              queues: dict[str, asyncio.Queue], numberOf_trials: int=1) -> None:
+                              queues: dict[str, asyncio.Queue], numberOf_trials: int=2) -> None:
 
         trial = 1
         while trial <= numberOf_trials:
