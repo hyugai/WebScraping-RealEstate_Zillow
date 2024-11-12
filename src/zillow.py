@@ -2,7 +2,7 @@
 from libs import *
 
 # class GeneralHomeScraper
-class TestGeneralHomesScraper():
+class GeneralHomesScraper():
     def __init__(self,
                  headers: dict[str, str]) -> None:
         self.headers = headers
