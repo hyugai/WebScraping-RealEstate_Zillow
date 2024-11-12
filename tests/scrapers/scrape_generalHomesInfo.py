@@ -37,4 +37,16 @@ with sqlite3.connect(db_path) as conn:
 
 # another exp
 general_homes_scraper = TestGeneralHomesScraper(ZILLOW_HEADERS)
-general_homes_scraper.main(cities_hrefs)
+results = general_homes_scraper.main(cities_hrefs)
+
+with sqlite3.connect(db_path) as conn:
+    cur = conn.cursor()
+    cur.execute("CREATE TABLE IF NOT EXISTS home (id TEXT UNIQUE, json TEXT)")
+    cur.executemany("INSERT OR REPLACE INTO home (id, json) VALUES (?, ?)", results['home'])
+
+csv_path = (Path.cwd()/'tests'/'resource'/'db'/'failed_city_href.csv').as_posix()
+pd.DataFrame({'href': results['failed_city_href']})\
+    .to_csv(csv_path, index=False)
+csv_path = (Path.cwd()/'tests'/'resource'/'db'/'failed_page_href.csv').as_posix()
+pd.DataFrame({'href': results['failed_page_href']})\
+    .to_csv(csv_path, index=False)
