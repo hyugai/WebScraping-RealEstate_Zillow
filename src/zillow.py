@@ -184,9 +184,9 @@ class TestGeneralHomesScraper():
                 dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
                 xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
                 nodes_a = dom.xpath(xpath)
-                full_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
+                cities_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
 
-                return full_hrefs
+                return cities_hrefs
             else:
                 raise Exception(f'Failed (error code: {r.status_code})')
 
@@ -204,42 +204,58 @@ class TestGeneralHomesScraper():
                 
                 pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
                 for href in pages_hrefs:
-                    await queues['succeeded'].put(href)
+                    await queues['page_href'].put(href)
             else:
-                await queues['retry'].put(city_href) 
+                await queues['failed_city_href'].put(city_href) 
 
-    async def extract_homes(self, 
-                            s: aiohttp.ClientSession, queue: asyncio.Queue) -> None:
+    async def extract_homesFromPageHref(self, 
+                            s: aiohttp.ClientSession, queues: dict[str, asyncio.Queue]) -> None:
         while True:
-            href = await queue.get() 
+            page_href = await queues['page_href'].get() 
 
             self.headers['User-Agent'] = UserAgent().random
-            async with s.get(href, headers=self.headers) as r:
+            async with s.get(page_href, headers=self.headers) as r:
                 if r.status == 200:
-                    content = await r.text()
                     print('OK')
+
+                    content = await r.text()
+                    dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+
+                    xpath = "//script[@type='application/json' and @id='__NEXT_DATA__']"
+                    nodes_script = dom.xpath(xpath)[0]
+
+                    unfilteredJSON: dict = json.loads(nodes_script.text)
+                    key_to_find = 'listResults'
+                    while key_to_find not in unfilteredJSON:
+                        tmp_dict = {}
+                        [tmp_dict.update(value) for value in unfilteredJSON.values() if isinstance(value, dict)]
+                        unfilteredJSON = tmp_dict
+                    homes_asJSON: list[dict] = unfilteredJSON[key_to_find]
+
+                    await queues['home'].put(homes_asJSON)
                 else:
                     print(f'Failed to extract homes: {r.status}')
+                    await queues['failed_page_href'].put(page_href)
 
-            queue.task_done()
+            queues['page_href'].task_done()
 
     async def collect(self, 
                       hrefs: list[str]) -> None: 
-        queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
+        queues = {'page_href': asyncio.Queue(), 'failed_city_href': asyncio.Queue(), 
+                  'failed_page_href': asyncio.Queue(), 'home': asyncio.Queue()} 
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
-            task_extract_homes = asyncio.create_task(self.extract_homes(s, queues['succeeded']))
+            task_extract_homes = asyncio.create_task(self.extract_homesFromPageHref(s, queues))
 
             await asyncio.gather(*tasks_extract_pages_hrefs)
             
-            await queues['succeeded'].join()
+            await queues['page_href'].join()
 
             task_extract_homes.cancel()
 
             # results
-            print(f"Succeeded': {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
             ##
             
     def main(self):
-        cities_hrefs = self.extract_cities_hrefs()
+        cities_hrefs = self.extract_cities_hrefs()[:2]
         asyncio.run(self.collect(cities_hrefs))
