@@ -11,8 +11,8 @@ from libs import *
 db_path = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
 with sqlite3.connect(db_path) as conn:
     cur = conn.cursor()
-    cur.execute('SELECT * FROM pages_hrefs')
-    pages_hrefs = [row[0] for row in cur.fetchall()]
+    cur.execute('SELECT * FROM city_href')
+    cities_hrefs = [row[0] for row in cur.fetchall()]
 
 #scrape_freeProxyList()
 #csv_path = (Path.cwd()/'tests'/'resource'/'proxies'/'free_proxy_list.csv').as_posix()
@@ -37,4 +37,4 @@ with sqlite3.connect(db_path) as conn:
 
 # another exp
 general_homes_scraper = TestGeneralHomesScraper(ZILLOW_HEADERS)
-general_homes_scraper.main()
+general_homes_scraper.main(cities_hrefs)

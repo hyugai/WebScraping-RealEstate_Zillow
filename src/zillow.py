@@ -175,21 +175,6 @@ class TestGeneralHomesScraper():
                  headers: dict[str, str]) -> None:
         self.headers = headers
 
-    def extract_cities_hrefs(self) -> list[str]:
-        with requests.Session() as s:
-            self.headers['User-Agent'] = UserAgent().random 
-            r = s.get(ZILLOW, headers=self.headers) 
-
-            if r.status_code == 200:
-                dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
-                xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
-                nodes_a = dom.xpath(xpath)
-                cities_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
-
-                return cities_hrefs
-            else:
-                raise Exception(f'Failed (error code: {r.status_code})')
-
     async def extract_pages_hrefs(self,
                                 s: aiohttp.ClientSession, city_href: str, 
                                 queues: dict[str, asyncio.Queue]) -> None:
@@ -230,9 +215,9 @@ class TestGeneralHomesScraper():
                         tmp_dict = {}
                         [tmp_dict.update(value) for value in unfilteredJSON.values() if isinstance(value, dict)]
                         unfilteredJSON = tmp_dict
-                    homes_asJSON: list[dict] = unfilteredJSON[key_to_find]
+                    homes_asListOfDict: list[dict] = unfilteredJSON[key_to_find]
 
-                    await queues['home'].put(homes_asJSON)
+                    await queues['home'].put(homes_asListOfDict)
                 else:
                     print(f'Failed to extract homes: {r.status}')
                     await queues['failed_page_href'].put(page_href)
@@ -240,11 +225,11 @@ class TestGeneralHomesScraper():
             queues['page_href'].task_done()
 
     async def collect(self, 
-                      hrefs: list[str]) -> None: 
+                      cities_hrefs: list[str]) -> None: 
         queues = {'page_href': asyncio.Queue(), 'failed_city_href': asyncio.Queue(), 
                   'failed_page_href': asyncio.Queue(), 'home': asyncio.Queue()} 
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
-            tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
+            tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in cities_hrefs]
             task_extract_homes = asyncio.create_task(self.extract_homesFromPageHref(s, queues))
 
             await asyncio.gather(*tasks_extract_pages_hrefs)
@@ -256,6 +241,23 @@ class TestGeneralHomesScraper():
             # results
             ##
             
-    def main(self):
-        cities_hrefs = self.extract_cities_hrefs()[:2]
+    def main(self, 
+             cities_hrefs: list[str]) -> None:
         asyncio.run(self.collect(cities_hrefs))
+
+# function: extract cities' hrefs
+def extract_cities_hrefs(
+                         headers: dict[str, str]) -> list[str]:
+    with requests.Session() as s:
+        headers['User-Agent'] = UserAgent().random 
+        r = s.get(ZILLOW, headers=headers) 
+
+        if r.status_code == 200:
+            dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
+            xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
+            nodes_a = dom.xpath(xpath)
+            cities_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
+
+            return cities_hrefs
+        else:
+            raise Exception(f'Failed (error code: {r.status_code})')
