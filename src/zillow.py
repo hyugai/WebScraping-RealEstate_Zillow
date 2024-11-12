@@ -176,8 +176,8 @@ class TestGeneralHomesScraper():
         self.headers = headers
 
     async def extract_pages_hrefs(self,
-                                s: aiohttp.ClientSession, city_href: str, 
-                                queues: dict[str, asyncio.Queue]) -> None:
+                                  s: aiohttp.ClientSession, city_href: str, 
+                                  queues: dict[str, asyncio.Queue]) -> None:
         self.headers['User-Agent'] = UserAgent().random
         async with s.get(city_href, headers=self.headers) as r:
             if (r.status == 200): 
@@ -194,7 +194,7 @@ class TestGeneralHomesScraper():
                 await queues['failed_city_href'].put(city_href) 
 
     async def extract_homesFromPageHref(self, 
-                            s: aiohttp.ClientSession, queues: dict[str, asyncio.Queue]) -> None:
+                                        s: aiohttp.ClientSession, queues: dict[str, asyncio.Queue]) -> None:
         while True:
             page_href = await queues['page_href'].get() 
 
@@ -224,26 +224,34 @@ class TestGeneralHomesScraper():
 
             queues['page_href'].task_done()
 
+    async def transship(self, 
+                        queues: dict[str, asyncio.Queue]) -> None:
+        homes_asListOfDicts = await queues['home'].get()
+
+        queues['home'].task_done() 
+
     async def collect(self, 
-                      cities_hrefs: list[str]) -> None: 
+                      cities_hrefs: list[str], num_homes_extractors: int=5) -> None: 
         queues = {'page_href': asyncio.Queue(), 'failed_city_href': asyncio.Queue(), 
                   'failed_page_href': asyncio.Queue(), 'home': asyncio.Queue()} 
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
             tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in cities_hrefs]
-            task_extract_homes = asyncio.create_task(self.extract_homesFromPageHref(s, queues))
+            tasks_extract_homes = [asyncio.create_task(self.extract_homesFromPageHref(s, queues)) for _ in range(num_homes_extractors)]
 
             await asyncio.gather(*tasks_extract_pages_hrefs)
             
             await queues['page_href'].join()
 
-            task_extract_homes.cancel()
-
+            for task in tasks_extract_homes:
+                task.cancel()
             # results
             ##
             
     def main(self, 
              cities_hrefs: list[str]) -> None:
+        start = time.time()
         asyncio.run(self.collect(cities_hrefs))
+        print(f'Finished in: {time.time() - start}')
 
 # function: extract cities' hrefs
 def extract_cities_hrefs(
