@@ -33,6 +33,6 @@ ZILLOW = 'https://www.zillow.com'
 
 # usr libs
 from trackers import * 
-from zillow import URLScraper, GeneralHomeScraper 
+from zillow import URLScraper, GeneralHomeScraper, TestGeneralHomesScraper
 from proxies import FreeProxyListScraper, GeonodeScraper, scrape_freeProxyList, scrape_geonode, scrape_proxyScrape
 from reports import DataReport

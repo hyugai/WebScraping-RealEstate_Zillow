@@ -169,3 +169,77 @@ class GeneralHomeScraper():
         print(f'Finished in: {time.time() - start}s')
 
         return collectedHomes, hrefsToRetry
+
+class TestGeneralHomesScraper():
+    def __init__(self,
+                 headers: dict[str, str]) -> None:
+        self.headers = headers
+
+    def extract_cities_hrefs(self) -> list[str]:
+        with requests.Session() as s:
+            self.headers['User-Agent'] = UserAgent().random 
+            r = s.get(ZILLOW, headers=self.headers) 
+
+            if r.status_code == 200:
+                dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
+                xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
+                nodes_a = dom.xpath(xpath)
+                full_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
+
+                return full_hrefs
+            else:
+                raise Exception(f'Failed (error code: {r.status_code})')
+
+    async def extract_pages_hrefs(self,
+                                s: aiohttp.ClientSession, city_href: str, 
+                                queues: dict[str, asyncio.Queue]) -> None:
+        self.headers['User-Agent'] = UserAgent().random
+        async with s.get(city_href, headers=self.headers) as r:
+            if (r.status == 200): 
+                content = await r.text()
+
+                dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
+                xpath = "//li[contains(@class, 'PaginationNumberItem')]/child::a"
+                nodes_a = dom.xpath(xpath)
+                
+                pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
+                for href in pages_hrefs:
+                    await queues['succeeded'].put(href)
+            else:
+                await queues['retry'].put(city_href) 
+
+    async def extract_homes(self, 
+                            s: aiohttp.ClientSession, queue: asyncio.Queue) -> None:
+        while True:
+            href = await queue.get() 
+
+            self.headers['User-Agent'] = UserAgent().random
+            async with s.get(href, headers=self.headers) as r:
+                if r.status == 200:
+                    content = await r.text()
+                    print('OK')
+                else:
+                    print(f'Failed to extract homes: {r.status}')
+
+            queue.task_done()
+
+    async def collect(self, 
+                      hrefs: list[str]) -> None: 
+        queues = {'succeeded': asyncio.Queue(), 'retry': asyncio.Queue()}
+        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
+            tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in hrefs]
+            task_extract_homes = asyncio.create_task(self.extract_homes(s, queues['succeeded']))
+
+            await asyncio.gather(*tasks_extract_pages_hrefs)
+            
+            await queues['succeeded'].join()
+
+            task_extract_homes.cancel()
+
+            # results
+            print(f"Succeeded': {queues['succeeded'].qsize()}\nFailed: {queues['retry'].qsize()}")
+            ##
+            
+    def main(self):
+        cities_hrefs = self.extract_cities_hrefs()
+        asyncio.run(self.collect(cities_hrefs))
