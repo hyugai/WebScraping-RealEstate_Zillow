@@ -12,4 +12,4 @@ with sqlite3.connect(db_path) as conn:
     cur = conn.cursor()
     cur.execute("select * from home")
     rows = cur.fetchall()
-    print(json.loads(rows[0][1])['hdpData'])
+    print(json.loads(rows[500][1]))
