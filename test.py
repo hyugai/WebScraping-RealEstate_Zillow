@@ -19,8 +19,10 @@ with requests.Session() as s:
     r = s.get(tets_url, headers={'User-Agent': UserAgent().random})
     if r.status_code == 200:
         print('OK')
+        dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml')))
 
-        print(r.text)
-        #print(BeautifulSoup(r.text).prettify())
+        xpath = "//h2[text()='Facts & features']"
+        node_h2 = dom.xpath(xpath)
+        print(node_h2)
     else:
         print('Failed')
