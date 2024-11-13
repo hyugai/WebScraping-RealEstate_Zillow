@@ -22,7 +22,7 @@ with requests.Session() as s:
         dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml')))
 
         xpath = "//h2[text()='Facts & features']"
-        node_h2 = dom.xpath(xpath)
-        print(node_h2)
+        node_h2 = dom.xpath(xpath)[0]
+        print(node_h2.text)
     else:
         print('Failed')
