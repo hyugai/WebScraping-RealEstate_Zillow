@@ -49,7 +49,10 @@ class GeneralHomesScraper():
                         unfilteredJSON = tmp_dict
                     homes_asListOfDicts: list[dict] = unfilteredJSON[key_to_find]
 
-                    await queues['home'].put(homes_asListOfDicts)
+                    keys_to_keep = ['id', 'hdpData', 'detailUrl']
+                    filtered_homesInfo: list[dict] = [{key:value for key, value in home.items() if key in keys_to_keep} for home in homes_asListOfDicts]
+
+                    await queues['home'].put(filtered_homesInfo)
                 else:
                     print(f'Failed to extract homes: {r.status}')
                     await queues['failed_page_href'].put(page_href)

@@ -36,7 +36,7 @@ with sqlite3.connect(db_path) as conn:
 #pd.DataFrame({'href': hrefsToRetry}).to_csv(csv_path, index=False)
 
 # another exp
-general_homes_scraper = TestGeneralHomesScraper(ZILLOW_HEADERS)
+general_homes_scraper = GeneralHomesScraper(ZILLOW_HEADERS)
 results = general_homes_scraper.main(cities_hrefs)
 
 with sqlite3.connect(db_path) as conn:
