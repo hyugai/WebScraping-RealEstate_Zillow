@@ -20,6 +20,7 @@ with requests.Session() as s:
     if r.status_code == 200:
         print('OK')
 
+        print(r.text)
         #print(BeautifulSoup(r.text).prettify())
     else:
         print('Failed')
