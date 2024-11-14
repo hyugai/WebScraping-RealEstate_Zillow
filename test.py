@@ -24,7 +24,20 @@ def foo():
 
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
             nodes_div = dom.xpath(xpath)
-            print(nodes_div[1].xpath("./descendant::h3")[0].text)
+            # test
+            single_node_div = nodes_div[0]
+
+            xpath = "./descendant::h3"
+            node_h3 = single_node_div.xpath(xpath)[0]
+            xpath = "./child::div[2]/child::div" 
+            child_nodes_div = single_node_div.xpath(xpath)
+            
+            print(type(child_nodes_div[0]))
+            for i in child_nodes_div[0].xpath("./descendant::span")[0].itertext():
+                print(i)
+            ##
+#            for node in nodes_div:
+#                print(node.xpath("./descendant::h3")[0].text)
         else:
             print('Failed')
         
