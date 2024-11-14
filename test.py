@@ -14,15 +14,18 @@ def draft():
         cur.execute("select * from home")
         rows = cur.fetchall()
 
-with requests.Session() as s:
-    tets_url = 'https://www.zillow.com/homedetails/1220-Garcia-St-NE-Albuquerque-NM-87112/6772539_zpid/'
-    r = s.get(tets_url, headers={'User-Agent': UserAgent().random})
-    if r.status_code == 200:
-        print('OK')
-        soup = BeautifulSoup(r.text, features='lxml')
-        dom = etree.HTML(str(soup))
+def foo():
+    with requests.Session() as s:
+        tets_url = 'https://www.zillow.com/homedetails/1220-Garcia-St-NE-Albuquerque-NM-87112/6772539_zpid/'
+        r = s.get(tets_url, headers={'User-Agent': UserAgent().random})
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text, features='lxml')
+            dom = etree.HTML(str(soup))
 
-        nodes_div = dom.xpath("//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group'][5]//h3") 
-        print(nodes_div[0].text)
-    else:
-        print('Failed')
+            xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
+            nodes_div = dom.xpath(xpath)
+            print(nodes_div[1].xpath("./descendant::h3")[0].text)
+        else:
+            print('Failed')
+        
+foo()
