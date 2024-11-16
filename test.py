@@ -23,21 +23,30 @@ def foo():
             dom = etree.HTML(str(soup))
 
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
-            nodes_div = dom.xpath(xpath)
-            # test
-            single_node_div = nodes_div[0]
+            nodes_div: list[etree._Element] = dom.xpath(xpath)
 
-            xpath = "./descendant::h3"
-            node_h3 = single_node_div.xpath(xpath)[0]
-            xpath = "./child::div[2]/child::div" 
-            child_nodes_div = single_node_div.xpath(xpath)
-            
-            print(type(child_nodes_div[0]))
-            for i in child_nodes_div[0].xpath("./descendant::span")[0].itertext():
-                print(i)
+            # test 01
+            for node in nodes_div:
+                child_nodes_div: list[etree._Element] = node.xpath("./child::div")
+
+                descendant_node_h3_asMainKey = child_nodes_div[0].xpath("./descendant::h3")[0].text
+
+                descendant_nodes_div_asSubElements: list[etree._Element] = child_nodes_div[1].xpath("./child::div")
+                for ele in descendant_nodes_div_asSubElements:
+                    nodes_span = ele.xpath("./descendant::span")
             ##
-#            for node in nodes_div:
-#                print(node.xpath("./descendant::h3")[0].text)
+
+            # test
+#            single_node_div = nodes_div[0]
+#
+#            xpath = "./descendant::h3"
+#            node_h3 = single_node_div.xpath(xpath)[0]
+#            xpath = "./child::div[2]/child::div" 
+#            child_nodes_div: list[etree._Element] = single_node_div.xpath(xpath)
+#            
+#            for i in child_nodes_div[1].xpath("./descendant::span")[0].itertext():
+#                print(i)
+            ##
         else:
             print('Failed')
         
