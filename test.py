@@ -23,17 +23,28 @@ def foo():
             dom = etree.HTML(str(soup))
 
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
-            nodes_div: list[etree._Element] = dom.xpath(xpath)
+            nodes_div = dom.xpath(xpath)
 
             for node in nodes_div:
                 feature = node.xpath("./descendant::h3")[0].text
+                print(feature)
 
                 for node_ul in node.xpath("./descendant::ul"):
                     node_h6 = node_ul.xpath("./preceding-sibling::h6")
 
+                    nodes_span = node_ul.xpath("./descendant::span")
+                    a = [('"'.join([i.strip() for i in span.itertext()])) for span in nodes_span] 
+                    a = ['{"%s"}' % i for i in a]
+                    a = [i for i in a if ':' in i]
+                    print(a)
+                    json.loads(a[0])
+
                     if node_h6:
                         pass 
+                    else:
+                        pass
         else:
             print('Failed')
         
 foo()
+eval("{'key': 'value'}")
