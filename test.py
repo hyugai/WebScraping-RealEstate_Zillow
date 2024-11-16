@@ -24,41 +24,6 @@ def foo():
 
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
             nodes_div: list[etree._Element] = dom.xpath(xpath)
-
-            # test 01
-            detailInfo_asDict: dict[str, dict] = dict()
-            for node in nodes_div:
-                child_nodes_div: list[etree._Element] = node.xpath("./child::div")
-
-                descendant_node_h3_asMainKey = child_nodes_div[0].xpath("./descendant::h3")[0].text
-
-                descendant_nodes_div_asSubElements: list[etree._Element] = child_nodes_div[1].xpath("./child::div")
-                tmp_dict: dict[str, dict] = {}
-                for ele in descendant_nodes_div_asSubElements:
-                    node_h6: list[etree._Element] = ele.xpath("./child::h6")
-
-                    nodes_span: list[etree._Element] = ele.xpath("./descendant::span")
-                    a = [''.join(span.itertext()) for span in nodes_span]
-
-                    if node_h6:
-                        tmp_dict[node_h6[0].text] = None
-                    else:
-                        tmp_dict['Info'] = None
-
-                detailInfo_asDict[descendant_node_h3_asMainKey] = tmp_dict 
-            ##
-
-            # test
-#            single_node_div = nodes_div[0]
-#
-#            xpath = "./descendant::h3"
-#            node_h3 = single_node_div.xpath(xpath)[0]
-#            xpath = "./child::div[2]/child::div" 
-#            child_nodes_div: list[etree._Element] = single_node_div.xpath(xpath)
-#            
-#            for i in child_nodes_div[1].xpath("./descendant::span")[0].itertext():
-#                print(i)
-            ##
         else:
             print('Failed')
         
