@@ -26,23 +26,26 @@ def foo():
             nodes_div: list[etree._Element] = dom.xpath(xpath)
 
             # test 01
-            detailInfo_asDict = dict()
+            detailInfo_asDict: dict[str, dict] = dict()
             for node in nodes_div:
                 child_nodes_div: list[etree._Element] = node.xpath("./child::div")
 
                 descendant_node_h3_asMainKey = child_nodes_div[0].xpath("./descendant::h3")[0].text
-                detailInfo_asDict[descendant_node_h3_asMainKey] = None
 
                 descendant_nodes_div_asSubElements: list[etree._Element] = child_nodes_div[1].xpath("./child::div")
+                tmp_dict: dict[str, dict] = {}
                 for ele in descendant_nodes_div_asSubElements:
-                    try:
-                        node_h6_asSubkey = ele.xpath("./child::h6")[0].text
-                    except:
-                        print(node_h6_asSubkey)
-                    nodes_span: list[etree._Element] = ele.xpath("./descendant::span")
+                    node_h6: list[etree._Element] = ele.xpath("./child::h6")
 
+                    nodes_span: list[etree._Element] = ele.xpath("./descendant::span")
                     a = [''.join(span.itertext()) for span in nodes_span]
-                    print(a)
+
+                    if node_h6:
+                        tmp_dict[node_h6[0].text] = None
+                    else:
+                        tmp_dict['Info'] = None
+
+                detailInfo_asDict[descendant_node_h3_asMainKey] = tmp_dict 
             ##
 
             # test
