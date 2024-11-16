@@ -24,6 +24,15 @@ def foo():
 
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
             nodes_div: list[etree._Element] = dom.xpath(xpath)
+
+            for node in nodes_div:
+                feature = node.xpath("./descendant::h3")[0].text
+
+                for node_ul in node.xpath("./descendant::ul"):
+                    node_h6 = node_ul.xpath("./preceding-sibling::h6")
+
+                    if node_h6:
+                        pass 
         else:
             print('Failed')
         
