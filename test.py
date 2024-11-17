@@ -16,7 +16,7 @@ def draft():
 
 def foo():
     with requests.Session() as s:
-        tets_url = 'https://www.zillow.com/homedetails/1220-Garcia-St-NE-Albuquerque-NM-87112/6772539_zpid/'
+        tets_url = 'https://www.zillow.com/homedetails/10789-Towner-Ave-NE-Albuquerque-NM-87112/54580242_zpid/'
         r = s.get(tets_url, headers={'User-Agent': UserAgent().random})
         if r.status_code == 200:
             soup = BeautifulSoup(r.text, features='lxml')
@@ -25,24 +25,35 @@ def foo():
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
             nodes_div = dom.xpath(xpath)
 
+            main = {}
             for node in nodes_div:
                 feature = node.xpath("./descendant::h3")[0].text
-                print(feature)
 
+                subs = {}
                 for node_ul in node.xpath("./descendant::ul"):
                     node_h6 = node_ul.xpath("./preceding-sibling::h6")
 
                     nodes_span = node_ul.xpath("./descendant::span")
-                    a = [('"'.join([i.strip() for i in span.itertext()])) for span in nodes_span] 
+                    x = [[i for i in span.itertext()] for span in nodes_span]
+                    b = []
+                    a = ['"'.join(i) if (len(i) > 1) else b.append(i[0]) for i in x] 
                     a = ['{"%s"}' % i for i in a]
-                    a = [i for i in a if ':' in i]
-                    print(a)
-                    json.loads(a[0])
-
+                    tmp_dict = {}
+                    [tmp_dict.update(eval(i)) for i in a if ':' in i]
+                    
                     if node_h6:
-                        pass 
+                        if b and (not tmp_dict):
+                            subs[node_h6[0].text] = b[0]
+                        else:
+                            subs[node_h6[0].text] = tmp_dict
+
                     else:
-                        pass
+                        subs.update(tmp_dict)
+
+                main[feature] = subs
+            
+            print(main)
+
         else:
             print('Failed')
         
