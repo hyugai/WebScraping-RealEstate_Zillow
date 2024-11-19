@@ -25,39 +25,42 @@ def foo():
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
             nodes_div = dom.xpath(xpath)
 
-            detailedInfo = {}
+            allInfo = {}
             for node in nodes_div:
                 parentAtt= node.xpath("./descendant::h3")[0].text
 
                 childAtts = {}
                 for node_ul in node.xpath("./descendant::ul"):
-                    desAtt = node_ul.xpath("./preceding-sibling::h6")
+                    childAtt_Name = node_ul.xpath("./preceding-sibling::h6")
 
                     nodes_span = node_ul.xpath("./descendant::span")
-                    seperatedTexts = [[i for i in span.itertext()] for span in nodes_span]
+                    childAtt_Content= [[i for i in span.itertext()] for span in nodes_span]
 
-                    noKeyTexts = []
-                    a = ['"'.join(i) if (len(i) > 1) else noKeyTexts.append(i[0]) for i in seperatedTexts] 
-                    a = ['{"%s"}' % i for i in a]
+                    noKeyTexts = [childAtt_Content.pop(i)[0] for i, val in enumerate(childAtt_Content) if (len(val) == 1)]
+
+                    flattened_childAtt_Content = ['{"' + '"'.join(i) + '"}' for i in childAtt_Content] 
                     tmp_dict = {}
-                    [tmp_dict.update(eval(i)) for i in a if ':' in i]
+                    [tmp_dict.update(eval(i)) for i in flattened_childAtt_Content if ':' in i]
                     
-                    print(noKeyTexts)
-                    if desAtt:
+                    if childAtt_Name:
                         if noKeyTexts and (not tmp_dict):
-                            childAtts[desAtt[0].text] = noKeyTexts[0]
+                            childAtts[childAtt_Name[0].text] = noKeyTexts[0]
                         elif noKeyTexts and (tmp_dict):
                             tmp_dict.update({noKeyTexts[0]: True})
-                            childAtts[desAtt[0].text] = tmp_dict 
+                            childAtts[childAtt_Name[0].text] = tmp_dict 
                         else:
-                            childAtts[desAtt[0].text] = tmp_dict
+                            childAtts[childAtt_Name[0].text] = tmp_dict
 
                     else:
                         childAtts.update(tmp_dict)
+                    
+                    # test
 
-                detailedInfo[parentAtt] = childAtts 
+                    ## test
+
+                allInfo[parentAtt] = childAtts
             
-            print(detailedInfo)
+            print(allInfo)
 
         else:
             print('Failed')
