@@ -25,34 +25,36 @@ def foo():
             xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
             nodes_div = dom.xpath(xpath)
 
-            main = {}
+            detailedInfo = {}
             for node in nodes_div:
-                feature = node.xpath("./descendant::h3")[0].text
+                main_feature = node.xpath("./descendant::h3")[0].text
 
-                subs = {}
+                sub_atts = {}
                 for node_ul in node.xpath("./descendant::ul"):
-                    node_h6 = node_ul.xpath("./preceding-sibling::h6")
+                    node_h6_asAtt = node_ul.xpath("./preceding-sibling::h6")
 
                     nodes_span = node_ul.xpath("./descendant::span")
-                    x = [[i for i in span.itertext()] for span in nodes_span]
-                    b = []
-                    a = ['"'.join(i) if (len(i) > 1) else b.append(i[0]) for i in x] 
+                    seperatedTexts = [[i for i in span.itertext()] for span in nodes_span]
+
+                    noKeyTexts = []
+                    a = ['"'.join(i) if (len(i) > 1) else noKeyTexts.append(i[0]) for i in seperatedTexts] 
                     a = ['{"%s"}' % i for i in a]
                     tmp_dict = {}
                     [tmp_dict.update(eval(i)) for i in a if ':' in i]
                     
-                    if node_h6:
-                        if b and (not tmp_dict):
-                            subs[node_h6[0].text] = b[0]
+                    print(noKeyTexts)
+                    if node_h6_asAtt:
+                        if noKeyTexts and (not tmp_dict):
+                            sub_atts[node_h6_asAtt[0].text] = noKeyTexts[0]
                         else:
-                            subs[node_h6[0].text] = tmp_dict
+                            sub_atts[node_h6_asAtt[0].text] = tmp_dict
 
                     else:
-                        subs.update(tmp_dict)
+                        sub_atts.update(tmp_dict)
 
-                main[feature] = subs
+                detailedInfo[main_feature] = sub_atts 
             
-            print(main)
+            print(detailedInfo)
 
         else:
             print('Failed')
