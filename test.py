@@ -39,31 +39,8 @@ def foo():
                     noKeyTexts = [childAtt_Content.pop(i)[0] for i, val in enumerate(childAtt_Content) if (len(val) == 1)]
 
                     flattened_childAtt_Content = ['{"' + '"'.join(i) + '"}' for i in childAtt_Content] 
-                    tmp_dict = {}
-                    [tmp_dict.update(eval(i)) for i in flattened_childAtt_Content if ':' in i]
-                    
-                    if childAtt_Name:
-                        if noKeyTexts and (not tmp_dict):
-                            childAtts[childAtt_Name[0].text] = noKeyTexts[0]
-                        elif noKeyTexts and (tmp_dict):
-                            tmp_dict.update({noKeyTexts[0]: True})
-                            childAtts[childAtt_Name[0].text] = tmp_dict 
-                        else:
-                            childAtts[childAtt_Name[0].text] = tmp_dict
-
-                    else:
-                        childAtts.update(tmp_dict)
-                    
-                    # test
-
-                    ## test
-
-                allInfo[parentAtt] = childAtts
-            
-            print(allInfo)
-
+                    print(noKeyTexts, flattened_childAtt_Content)
         else:
             print('Failed')
         
 foo()
-eval("{'key': 'value'}")
