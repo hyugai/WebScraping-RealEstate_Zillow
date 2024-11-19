@@ -27,19 +27,31 @@ def foo():
 
             allInfo = {}
             for node in nodes_div:
-                parentAtt= node.xpath("./descendant::h3")[0].text
+                parentAtt_Name: str = node.xpath("./descendant::h3")[0].text
 
                 childAtts = {}
                 for node_ul in node.xpath("./descendant::ul"):
-                    childAtt_Name = node_ul.xpath("./preceding-sibling::h6")
+                    childAtt_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6")
 
-                    nodes_span = node_ul.xpath("./descendant::span")
-                    childAtt_Content= [[i for i in span.itertext()] for span in nodes_span]
+                    nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span")
+                    childAtt_Content: list[list[str]]= [[i for i in span.itertext()] for span in nodes_span]
 
-                    noKeyTexts = [childAtt_Content.pop(i)[0] for i, val in enumerate(childAtt_Content) if (len(val) == 1)]
+                    noKeyTexts = ['{"Description": "%s"}' % childAtt_Content.pop(i)[0] for i, val in enumerate(childAtt_Content) if (len(val) == 1)]
 
-                    flattened_childAtt_Content = ['{"' + '"'.join(i) + '"}' for i in childAtt_Content] 
-                    print(noKeyTexts, flattened_childAtt_Content)
+                    flattened_childAtt_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in childAtt_Content] 
+                    flattened_childAtt_Content.extend(noKeyTexts)
+
+                    tmp_dict = dict()
+                    [tmp_dict.update(eval(i)) for i in flattened_childAtt_Content]
+
+                    if childAtt_Name:
+                        childAtts[childAtt_Name[0].text] = tmp_dict 
+                    else:
+                            childAtts.update(tmp_dict)
+
+                allInfo[parentAtt_Name] = childAtts
+
+            print(allInfo)
         else:
             print('Failed')
         
