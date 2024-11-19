@@ -27,11 +27,11 @@ def foo():
 
             detailedInfo = {}
             for node in nodes_div:
-                main_feature = node.xpath("./descendant::h3")[0].text
+                parentAtt= node.xpath("./descendant::h3")[0].text
 
-                sub_atts = {}
+                childAtts = {}
                 for node_ul in node.xpath("./descendant::ul"):
-                    node_h6_asAtt = node_ul.xpath("./preceding-sibling::h6")
+                    desAtt = node_ul.xpath("./preceding-sibling::h6")
 
                     nodes_span = node_ul.xpath("./descendant::span")
                     seperatedTexts = [[i for i in span.itertext()] for span in nodes_span]
@@ -43,16 +43,19 @@ def foo():
                     [tmp_dict.update(eval(i)) for i in a if ':' in i]
                     
                     print(noKeyTexts)
-                    if node_h6_asAtt:
+                    if desAtt:
                         if noKeyTexts and (not tmp_dict):
-                            sub_atts[node_h6_asAtt[0].text] = noKeyTexts[0]
+                            childAtts[desAtt[0].text] = noKeyTexts[0]
+                        elif noKeyTexts and (tmp_dict):
+                            tmp_dict.update({noKeyTexts[0]: True})
+                            childAtts[desAtt[0].text] = tmp_dict 
                         else:
-                            sub_atts[node_h6_asAtt[0].text] = tmp_dict
+                            childAtts[desAtt[0].text] = tmp_dict
 
                     else:
-                        sub_atts.update(tmp_dict)
+                        childAtts.update(tmp_dict)
 
-                detailedInfo[main_feature] = sub_atts 
+                detailedInfo[parentAtt] = childAtts 
             
             print(detailedInfo)
 
