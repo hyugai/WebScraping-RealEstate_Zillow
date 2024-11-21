@@ -33,5 +33,4 @@ ZILLOW = 'https://www.zillow.com'
 
 # usr libs
 from zillow import GeneralHomesScraper, extract_cities_hrefs
-from proxies import FreeProxyListScraper, GeonodeScraper, scrape_freeProxyList, scrape_geonode, scrape_proxyScrape
 from reports import DataReport
