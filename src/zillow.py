@@ -1,5 +1,5 @@
 # libs
-from libs import *
+from usr_libs import *
 
 # class GeneralHomeScraper
 class GeneralHomesScraper():
@@ -116,6 +116,8 @@ def extract_cities_hrefs(
         r = s.get(ZILLOW, headers=headers) 
 
         if r.status_code == 200:
+            print('OK')
+
             dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
             xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
             nodes_a = dom.xpath(xpath)

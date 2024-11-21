@@ -1,14 +1,14 @@
 # libs
-import os, sys
-cwd = os.getcwd()
-os.chdir('src'); path_to_src = os.getcwd()
-os.chdir(cwd)
+from pathlib import Path
+import sys
+
+path_to_src = (Path.cwd()/'src').as_posix()
 if path_to_src not in sys.path:
     sys.path.append(path_to_src)
-from libs import *
+from usr_libs import *
 
 cities_hrefs = extract_cities_hrefs(ZILLOW_HEADERS)
-path = cwd + '/tests/resource/db/real_estate.db'
+path = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
 with sqlite3.connect(path) as conn:
     cur = conn.cursor()
     cur.execute('CREATE TABLE IF NOT EXISTS city_href (href TEXT UNIQUE)')
