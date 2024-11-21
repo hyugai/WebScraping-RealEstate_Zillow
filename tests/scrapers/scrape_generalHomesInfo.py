@@ -20,8 +20,8 @@ results = general_homes_scraper.main(cities_hrefs)
 
 with sqlite3.connect(db_path) as conn:
     cur = conn.cursor()
-    cur.execute("CREATE TABLE IF NOT EXISTS home (id TEXT UNIQUE, json TEXT)")
-    cur.executemany("INSERT OR REPLACE INTO home (id, json) VALUES (?, ?)", results['home'])
+    cur.execute("CREATE TABLE IF NOT EXISTS home (id INTEGER UNIQUE, info TEXT, extension TEXT DEFAULT NULL)")
+    cur.executemany("INSERT OR REPLACE INTO home (id, info) VALUES (?, ?)", results['home'])
 
 csv_path = (Path.cwd()/'tests'/'resource'/'db'/'failed_city_href.csv').as_posix()
 pd.DataFrame({'href': results['failed_city_href']})\
