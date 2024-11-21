@@ -32,5 +32,5 @@ ZILLOW_HEADERS = {
 ZILLOW = 'https://www.zillow.com'
 
 # usr libs
-from zillow import GeneralHomesScraper, extract_cities_hrefs
+from zillow import extract_cities_hrefs, GeneralHomesScraper, DetailedHomesScraper
 from reports import DataReport

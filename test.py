@@ -4,7 +4,7 @@ from pathlib import Path
 path_to_src = (Path.cwd()/'src').as_posix()
 if path_to_src not in sys.path:
     sys.path.append(path_to_src) 
-from libs import * 
+from usr_libs import * 
 
 #exp
 def draft():
