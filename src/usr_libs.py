@@ -22,6 +22,7 @@ from pathlib import Path
 from datetime import datetime
 from io import StringIO
 from tabulate2 import tabulate
+import tabulate2
 
 # zillow's configs
 ZILLOW_HEADERS = {
@@ -34,3 +35,4 @@ ZILLOW = 'https://www.zillow.com'
 # usr libs
 from zillow import extract_cities_hrefs, GeneralHomesScraper, DetailedHomesScraper
 from reports import DataReport
+
