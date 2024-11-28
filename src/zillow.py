@@ -150,7 +150,7 @@ class DetailedHomesScraper():
                     xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
                     nodes_div = dom.xpath(xpath)
 
-                    # allInfo will include zero, one or more than one compounds and free texts(not included in any compounds)
+                    # allInfo will have 6 compounds including: "Interior", "Property"
                     allInfo = {}
                     for node in nodes_div:
                         parentAtt_Name: str = node.xpath("./descendant::h3")[0].text
