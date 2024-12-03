@@ -140,6 +140,7 @@ class DetailedHomesScraper():
                                    s: aiohttp.ClientSession, href: str, 
                                    queues: dict[str, asyncio.Queue]) -> None:
         while True:
+            home_id, href = await queues['href'].get()
             self.headers['User-Agent'] = UserAgent().random
             async with s.get(href, headers=self.headers) as r:
                 if r.status == 200:
@@ -168,36 +169,50 @@ class DetailedHomesScraper():
                             # if this is empty, this "ul" node will be "free texts"
                             subCompound_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6")
 
-                            # each node "span" consits of either 3 seprated strings or 1 string (noted as noKeyTexts)
+                            # each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
                             nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span")
-                            childAtt_Content: list[list[str]]= [[i for i in span.itertext()] for span in nodes_span]
+                            unflattened_subCompound_Content: list[list[str]]= [[i for i in span.itertext()] for span in nodes_span]
 
                             # make it compatible with the others
-                            noKeyTexts = ['{"Description": "%s"}' % childAtt_Content.pop(i)[0] for i, val in enumerate(childAtt_Content) if (len(val) == 1)]
+                            noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
 
-                            flattened_childAtt_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in childAtt_Content] 
-                            # add fixed noKeyTexts
-                            flattened_childAtt_Content.extend(noKeyTexts)
+                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in unflattened_subCompound_Content] 
+                            # add fixed noKeyTexts 
+                            flattened_subCompound_Content.extend(noKeyTexts)
 
-                            tmp_dict = dict()
-                            [tmp_dict.update(eval(i)) for i in flattened_childAtt_Content]
+                            subCompound_Content = dict()
+                            [subCompound_Content.update(eval(i)) for i in flattened_subCompound_Content]
 
                             if subCompound_Name:
-                                # sub-compound
-                                parentCompound_Content[subCompound_Name[0].text] = tmp_dict 
+                                # collect sub-compound for PARENT COMPOUND
+                                parentCompound_Content[subCompound_Name[0].text] = subCompound_Content
                             else:
-                                    # free texts
-                                    parentCompound_Content.update(tmp_dict)
-
-                        allCompounds[parentCompound_Name] = parentCompound_Content 
+                                # collect free-text for PARENT COMPOUND
+                                parentCompound_Content.update(subCompound_Content)
                     
-                    await queues['home'].put(allCompounds)
+                    await queues['home'].put((home_id, allCompounds))
                 else:
                     print(f'Failed (error code: {r.status})')
                     await queues['failed_href'].put(href)
 
-    async def collect(self):
-        pass
+    async def transship(self,
+                        queue: asyncio.Queue, results: list, 
+                        is_home: bool=True) -> None:
+        while True:
+            item: tuple[int, dict] | str = await queue.get() 
+            if is_home:
+                home_id, homeDetails = item
+                results.append((home_id, json.dumps(homeDetails)))
+            else:
+                results.append(item)
 
-    def main(self):
+
+    async def collect(self,
+                      href: asyncio.Queue) -> None:
+        queues = {'href': href, 'failed_href': asyncio.Queue(),
+                  'home': asyncio.Queue()}
+        results = {'failed_href': [], 'home': []}
+
+    def main(self, 
+             href: asyncio.Queue):
         pass
