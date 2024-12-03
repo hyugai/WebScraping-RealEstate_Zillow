@@ -1,11 +1,16 @@
 # libs
 import sys
+import pandas as pd
+import sqlite3
 from pathlib import Path
 
-src_path = (Path.cwd()/'src').as_posix()
-if src_path not in sys.path:
-    sys.path.append(src_path)
-from usr_libs import *
+sys.path.append((Path.cwd()/'src').as_posix())
+from zillow import GeneralHomesScraper
+ZILLOW_HEADERS = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
+    'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
+    'Referer': 'https://www.google.com.vn'
+}
 
 # exp
 def scrape():
