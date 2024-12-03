@@ -6,7 +6,7 @@ import sqlite3
 from pathlib import Path
 
 sys.path.append((Path.cwd()/'src').as_posix())
-from zillow import DetailedHomesScraper
+from extension_scraper import ExtensionScraper
 
 # exp
 path_to_db = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()

@@ -1,12 +1,14 @@
 # libs
-import requests
-from fake_useragent import UserAgent
-from bs4 import BeautifulSoup
-from lxml import etree
+import time
+import json
 import aiohttp
 import asyncio
-import json
-import time
+import requests
+from lxml import etree
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+
+# zillow's config
 ZILLOW_HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
     'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 

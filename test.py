@@ -1,10 +1,10 @@
-import sys
+import sqlite3
+import requests
+from lxml import etree
 from pathlib import Path
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
-path_to_src = (Path.cwd()/'src').as_posix()
-if path_to_src not in sys.path:
-    sys.path.append(path_to_src) 
-from usr_libs import * 
 
 #exp
 def draft():
