@@ -1,6 +1,7 @@
 # libs
 from usr_libs import *
 
+
 # function: extract cities' hrefs
 def extract_cities_hrefs(
                          headers: dict[str, str]) -> list[str]:
@@ -150,34 +151,47 @@ class DetailedHomesScraper():
                     xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
                     nodes_div = dom.xpath(xpath)
 
-                    # allInfo will have 6 compounds including: "Interior", "Property"
-                    allInfo = {}
+                    # allInfo will have 6 "parent compounds" (~ 6 nodes) including: "Interior", "Property", "Construction", "Utilities & green energy", "Community & HOA", "Financial & listing details"
+                    allCompounds= {}
+
+                    # Each node -> 2 sub-nodes: 
+                    # -> the 1st one contains the PARENT COMPOUND'S NAME
+                    # -> the 2nd one is the CONTENT ("free-text" & "sub-compound") of it 
                     for node in nodes_div:
-                        parentAtt_Name: str = node.xpath("./descendant::h3")[0].text
+                        # PARENT COMPOUND'S NAME
+                        parentCompound_Name: str = node.xpath("./descendant::h3")[0].text
 
-                        childAtts = {}
+                        parentCompound_Content= {}
+                        # PARENT COMPOUND'S CONTENT (iterate "ul"s to collect "free-text" and "sub-combound")
                         for node_ul in node.xpath("./descendant::ul"):
-                            childAtt_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6")
+                            # each "ul" node is either a "sub-combound" or "free texts" (sub-combound without the title)
+                            # if this is empty, this "ul" node will be "free texts"
+                            subCompound_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6")
 
+                            # each node "span" consits of either 3 seprated strings or 1 string (noted as noKeyTexts)
                             nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span")
                             childAtt_Content: list[list[str]]= [[i for i in span.itertext()] for span in nodes_span]
 
+                            # make it compatible with the others
                             noKeyTexts = ['{"Description": "%s"}' % childAtt_Content.pop(i)[0] for i, val in enumerate(childAtt_Content) if (len(val) == 1)]
 
                             flattened_childAtt_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in childAtt_Content] 
+                            # add fixed noKeyTexts
                             flattened_childAtt_Content.extend(noKeyTexts)
 
                             tmp_dict = dict()
                             [tmp_dict.update(eval(i)) for i in flattened_childAtt_Content]
 
-                            if childAtt_Name:
-                                childAtts[childAtt_Name[0].text] = tmp_dict 
+                            if subCompound_Name:
+                                # sub-compound
+                                parentCompound_Content[subCompound_Name[0].text] = tmp_dict 
                             else:
-                                    childAtts.update(tmp_dict)
+                                    # free texts
+                                    parentCompound_Content.update(tmp_dict)
 
-                        allInfo[parentAtt_Name] = childAtts
+                        allCompounds[parentCompound_Name] = parentCompound_Content 
                     
-                    await queues['home'].put(allInfo)
+                    await queues['home'].put(allCompounds)
                 else:
                     print(f'Failed (error code: {r.status})')
                     await queues['failed_href'].put(href)
