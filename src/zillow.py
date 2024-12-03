@@ -1,6 +1,19 @@
 # libs
-from usr_libs import *
-
+from pandas.core.construction import range_to_ndarray
+import requests
+from fake_useragent import UserAgent
+from bs4 import BeautifulSoup
+from lxml import etree
+import aiohttp
+import asyncio
+import json
+import time
+ZILLOW_HEADERS = {
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
+    'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
+    'Referer': 'https://www.google.com.vn'
+}
+ZILLOW = 'https://www.zillow.com'
 
 # function: extract cities' hrefs
 def extract_cities_hrefs(
@@ -137,8 +150,7 @@ class DetailedHomesScraper():
         self.headers = headers 
 
     async def extract_detailedInfo(self, 
-                                   s: aiohttp.ClientSession, href: str, 
-                                   queues: dict[str, asyncio.Queue]) -> None:
+                                   s: aiohttp.ClientSession, queues: dict[str, asyncio.Queue]) -> None:
         while True:
             home_id, href = await queues['href'].get()
             self.headers['User-Agent'] = UserAgent().random
@@ -189,6 +201,8 @@ class DetailedHomesScraper():
                             else:
                                 # collect free-text for PARENT COMPOUND
                                 parentCompound_Content.update(subCompound_Content)
+
+                        allCompounds[parentCompound_Name] = parentCompound_Content
                     
                     await queues['home'].put((home_id, allCompounds))
                 else:
@@ -208,11 +222,21 @@ class DetailedHomesScraper():
 
 
     async def collect(self,
-                      href: asyncio.Queue) -> None:
+                      href: asyncio.Queue, num_homeDetails_extractor: int=5) -> None:
         queues = {'href': href, 'failed_href': asyncio.Queue(),
                   'home': asyncio.Queue()}
         results = {'failed_href': [], 'home': []}
 
+        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
+            tasks_extract_homeDetails = [asyncio.create_task(self.extract_detailedInfo(s, queues)) for _ in range(num_homeDetails_extractor)]
+            tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 
+                               asyncio.create_task(self.transship(queues['failed_href'], results['failed_href'], is_home=False))] 
+
+            asyncio.gather(*tasks_extract_homeDetails)
+
+            [t.cancel() for t in tasks_transship]
+            [await q.join() for q in queues.values()]
+            
     def main(self, 
-             href: asyncio.Queue):
-        pass
+             href: asyncio.Queue, num_homeDetails_extractor: int=5):
+        asyncio.run(self.collect(href, num_homeDetails_extractor)) 

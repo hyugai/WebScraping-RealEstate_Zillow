@@ -1,6 +1,6 @@
 # libs
+from asyncio import queues
 from pathlib import Path
-from sqlite3 import sqlite_version
 import sys
 
 path_to_src = (Path.cwd()/'src').as_posix()
@@ -14,3 +14,5 @@ with sqlite3.connect(path_to_db) as conn:
     cur = conn.cursor()
     cur.execute("SELECT id, info FROM home")
     rows = [(id, json.loads(info)['detailUrl']) for id, info in cur.fetchall()]
+    
+queue_href = asyncio.Queue()
