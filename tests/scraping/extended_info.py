@@ -15,10 +15,5 @@ with sqlite3.connect(path_to_db) as conn:
     cur.execute("SELECT id, info FROM home")
     rows = [(id, json.loads(info)['detailUrl']) for id, info in cur.fetchall()]
     
-queue_href = asyncio.Queue()
-[queue_href.put_nowait(i) for i in rows[:6]]
-print(rows[:6])
-
 scraper = ExtendedScraper()
-results = asyncio.run(scraper.collect(queue_href))
-print(results)
+results = scraper.main(rows[:5], 2)

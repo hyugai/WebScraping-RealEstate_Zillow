@@ -120,6 +120,6 @@ class GeneralScraper():
              cities_hrefs: list[str]) -> dict[str, list]:
         start = time.time()
         results = asyncio.run(self.collect(cities_hrefs))
-        print(f'Finished in: {time.time() - start}')
+        print(f'Finished in: {time.time() - start}s')
 
         return results
