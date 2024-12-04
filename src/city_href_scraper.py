@@ -1,4 +1,5 @@
 # libs
+import asyncio
 import requests
 from lxml import etree
 from bs4 import BeautifulSoup
@@ -29,3 +30,6 @@ def extract_cities_hrefs() -> list[str]:
             return cities_hrefs
         else:
             raise Exception(f'Failed (error code: {r.status_code})')
+
+async def push_into_queue(queue: asyncio.Queue, item) -> None:
+    await queue.put(item) 

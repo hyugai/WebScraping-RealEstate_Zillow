@@ -14,8 +14,15 @@ ZILLOW_HEADERS = {
     'Referer': 'https://www.google.com.vn'
 }
 ZILLOW = 'https://www.zillow.com'
+
 # class DetailedHomesScraper
-class ExtensionScraper():
+"""
+We will have 6 "parent compounds" (~ 6 nodes) including: "Interior", "Property", "Construction", "Utilities & green energy", "Community & HOA", "Financial & listing details"
+Each node -> 2 sub-nodes: 
+     -> the 1st one contains the PARENT COMPOUND'S NAME
+     -> the 2nd one is the CONTENT ("free-text" & "sub-compound") of it 
+ """
+class ExtendedScraper():
     def __init__(self) -> None:
         self.headers = ZILLOW_HEADERS 
 
@@ -34,42 +41,40 @@ class ExtensionScraper():
                     xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
                     nodes_div = dom.xpath(xpath)
 
-                    # allInfo will have 6 "parent compounds" (~ 6 nodes) including: "Interior", "Property", "Construction", "Utilities & green energy", "Community & HOA", "Financial & listing details"
                     allCompounds= {}
 
-                    # Each node -> 2 sub-nodes: 
-                    # -> the 1st one contains the PARENT COMPOUND'S NAME
-                    # -> the 2nd one is the CONTENT ("free-text" & "sub-compound") of it 
                     for node in nodes_div:
                         # PARENT COMPOUND'S NAME
                         parentCompound_Name: str = node.xpath("./descendant::h3")[0].text
 
                         parentCompound_Content= {}
                         # PARENT COMPOUND'S CONTENT (iterate "ul"s to collect "free-text" and "sub-combound")
+                        # Each "ul" node is either a "sub-combound" or "free texts" (sub-combound without the title)
                         for node_ul in node.xpath("./descendant::ul"):
-                            # each "ul" node is either a "sub-combound" or "free texts" (sub-combound without the title)
-                            # if this is empty, this "ul" node will be "free texts"
+                            # If this is empty, this "ul" node will be "free texts"
                             subCompound_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6")
 
-                            # each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
+                            # Each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
                             nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span")
-                            unflattened_subCompound_Content: list[list[str]]= [[i for i in span.itertext()] for span in nodes_span]
+                            unflattened_subCompound_Content: list[list[str]]= [[i.strip() for i in span.itertext()] for span in nodes_span]
 
-                            # make it compatible with the others
+                            # Make it compatible with the others
                             noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
 
-                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in unflattened_subCompound_Content] 
-                            # add fixed noKeyTexts 
+                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in unflattened_subCompound_Content if len(i) != 2] # len(i) != 2 -> remove "View virtual tour"
+                            # Add fixed noKeyTexts 
                             flattened_subCompound_Content.extend(noKeyTexts)
 
                             subCompound_Content = dict()
                             [subCompound_Content.update(eval(i)) for i in flattened_subCompound_Content]
+                            print(subCompound_Content)
 
-                            if subCompound_Name:
-                                # collect sub-compound for PARENT COMPOUND
+                            if subCompound_Name: 
+                                # Collect sub-compound for PARENT COMPOUND
                                 parentCompound_Content[subCompound_Name[0].text] = subCompound_Content
+
                             else:
-                                # collect free-text for PARENT COMPOUND
+                                # Collect free-text for PARENT COMPOUND
                                 parentCompound_Content.update(subCompound_Content)
 
                         allCompounds[parentCompound_Name] = parentCompound_Content
@@ -78,6 +83,8 @@ class ExtensionScraper():
                 else:
                     print(f'Failed (error code: {r.status})')
                     await queues['failed_href'].put(href)
+
+            queues['href'].task_done()
 
     async def transship(self,
                         queue: asyncio.Queue, results: list, 
@@ -90,23 +97,29 @@ class ExtensionScraper():
             else:
                 results.append(item)
 
+            queue.task_done()
+
 
     async def collect(self,
-                      href: asyncio.Queue, num_homeDetails_extractor: int=5) -> None:
+                      href: asyncio.Queue, num_workers: int=5) -> dict[str, list]:
         queues = {'href': href, 'failed_href': asyncio.Queue(),
                   'home': asyncio.Queue()}
         results = {'failed_href': [], 'home': []}
 
         async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
-            tasks_extract_homeDetails = [asyncio.create_task(self.extract_detailedInfo(s, queues)) for _ in range(num_homeDetails_extractor)]
+            tasks_extract_homeDetails = [asyncio.create_task(self.extract_detailedInfo(s, queues)) for _ in range(num_workers)]
             tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 
                                asyncio.create_task(self.transship(queues['failed_href'], results['failed_href'], is_home=False))] 
-
+            
             asyncio.gather(*tasks_extract_homeDetails)
 
-            [t.cancel() for t in tasks_transship]
-            [await q.join() for q in queues.values()]
-            
-    def main(self, 
-             href: asyncio.Queue, num_homeDetails_extractor: int=5):
-        asyncio.run(self.collect(href, num_homeDetails_extractor)) 
+            for q in queues.values():
+                await q.join()
+
+            for t in tasks_extract_homeDetails:
+                t.cancel()
+
+            for t in tasks_transship:
+                t.cancel()
+
+        return results
