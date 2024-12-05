@@ -1,7 +1,6 @@
 # libs
 import sys
 import json
-import asyncio
 import sqlite3
 from pathlib import Path
 
@@ -14,6 +13,7 @@ with sqlite3.connect(path_to_db) as conn:
     cur = conn.cursor()
     cur.execute("SELECT id, info FROM home")
     rows = [(id, json.loads(info)['detailUrl']) for id, info in cur.fetchall()]
-    
+
 scraper = ExtendedScraper()
-results = scraper.main(rows[:5], 2)
+results = scraper.main(rows[6:14])
+print(results)

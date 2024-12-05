@@ -11,7 +11,6 @@ from fake_useragent import UserAgent
 ZILLOW_HEADERS = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
     'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
-    'Referer': 'https://www.google.com.vn'
 }
 ZILLOW = 'https://www.zillow.com'
 
@@ -102,7 +101,7 @@ class ExtendedScraper():
                   'home': asyncio.Queue()}
         results = {'failed_href': [], 'home': []}
 
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(cookie_jar=aiohttp.CookieJar(unsafe=True)) as s:
             tasks_push_hrefs_into_queue = [asyncio.create_task(self.push_into_queue(item, queues['href'])) for item in hrefs]
             tasks_extract_homeDetails = [asyncio.create_task(self.extract_detailedInfo(s, queues)) for _ in range(num_workers)]
             tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 

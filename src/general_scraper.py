@@ -28,6 +28,7 @@ class GeneralScraper():
         self.headers['User-Agent'] = UserAgent().random
         async with s.get(city_href, headers=self.headers) as r:
             if (r.status == 200): 
+                print('OK')
                 content = await r.text()
 
                 dom = etree.HTML(str(BeautifulSoup(content, features='lxml')))
@@ -38,6 +39,7 @@ class GeneralScraper():
                 for href in pages_hrefs:
                     await queues['page_href'].put(href)
             else:
+                print(f'Failed (error code {r.status})')
                 await queues['failed_city_href'].put(city_href) 
 
     # each page href will wait to be assigned to 1 of N below workers to extract general homes info
@@ -70,7 +72,7 @@ class GeneralScraper():
 
                     await queues['home'].put(filtered_homesInfo)
                 else:
-                    print(f'Failed to extract homes: {r.status}')
+                    print(f'Failed (error code{r.status})')
                     await queues['failed_page_href'].put(page_href)
 
             queues['page_href'].task_done()
