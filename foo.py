@@ -21,6 +21,7 @@ def foo1():
         zillow_headers['User-Agent'] = UserAgent().random
         r = s.get(zillow_homepage, headers=zillow_headers)
         print(r.status_code)
+foo1()
 
 # exp
 async def foo2():
@@ -32,7 +33,6 @@ async def foo2():
 
     await page.close()
 
-# use delay or proxies ?
 # exp
 def foo3():
     c = pycurl.Curl()
@@ -57,5 +57,3 @@ async def foo4():
 def foo5():
     r = curl_cffi.requests.get(homeDetail_href, impersonate="safari_ios")
     print(r.status_code)
-
-foo5()

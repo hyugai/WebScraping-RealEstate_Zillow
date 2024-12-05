@@ -12,8 +12,8 @@ path_to_db = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
 with sqlite3.connect(path_to_db) as conn:
     cur = conn.cursor()
     cur.execute("SELECT id, info FROM home")
-    rows = [(id, json.loads(info)['detailUrl']) for id, info in cur.fetchall()]
+    rows = [(home_id, json.loads(info)['detailUrl']) for home_id, info in cur.fetchall()]
 
 scraper = ExtendedScraper()
-results = scraper.main(rows[6:14])
-print(results)
+results = scraper.main(rows[:6])
+print(len(results['home']))

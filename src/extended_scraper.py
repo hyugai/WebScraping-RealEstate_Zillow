@@ -61,7 +61,7 @@ class ExtendedScraper():
                             # Make it compatible with the others
                             noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
 
-                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in unflattened_subCompound_Content if len(i) != 2] # len(i) != 2 -> remove "View virtual tour"
+                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in unflattened_subCompound_Content if (':' in i)] # len(i) != 2 -> remove "View virtual tour"
                             flattened_subCompound_Content.extend(noKeyTexts) # Add fixed noKeyTexts 
 
                             subCompound_Content = dict()
@@ -119,6 +119,7 @@ class ExtendedScraper():
              hrefs: list[tuple[int, str]], num_workers: int=5) -> dict[str, list]:
         start = time.time()
         results = asyncio.run(self.collect(hrefs, num_workers)) 
-        print(f'Finished in: {time.time() - start}s')
+        print(f"Finished in: {time.time() - start}s \
+                \nSuccessful rate: {len(results['home'])/len(hrefs):.2f}%")
 
         return results
