@@ -28,6 +28,7 @@ class ExtendedScraper():
         #while not queues['href'].empty(): # using the .empty() method ONLY when we get the item out 
         while True:
             home_id, href = await queues['href'].get()
+            print(href)
             headers = random.choice(zillow['headers'])
 
             async with s.get(href, headers=headers) as r:
