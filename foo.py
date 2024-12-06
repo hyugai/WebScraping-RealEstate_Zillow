@@ -63,6 +63,7 @@ def foo2(
 
         else:
             print(f'Failed (error code {r.status_code})')
+foo2(error_homeDetail_href)
 
 # exp
 def foo3():
@@ -72,4 +73,3 @@ def foo3():
         cur.execute("SELECT extension FROM home WHERE extension IS NOT NULL")
         rows = cur.fetchall()
         print(rows)
-foo3()

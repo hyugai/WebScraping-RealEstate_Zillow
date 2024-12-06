@@ -3,7 +3,6 @@ import random
 import requests
 from lxml import etree
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
 from zillow_conf import zillow
 
 
@@ -11,7 +10,6 @@ from zillow_conf import zillow
 def extract_cities_hrefs() -> list[str]:
     with requests.Session() as s:
         headers = random.choice(zillow['headers'])
-        headers['User-Agent'] = UserAgent().random 
         r = s.get(zillow['homepage'], headers=headers) 
 
         if r.status_code == 200:

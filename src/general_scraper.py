@@ -17,7 +17,7 @@ class GeneralScraper():
     async def extract_pages_hrefs(self,
                                   s: aiohttp.ClientSession, city_href: str, 
                                   queues: dict[str, asyncio.Queue]) -> None:
-        headers = random.choice(self.zillow)
+        headers = random.choice(self.zillow['headers'])
         async with s.get(city_href, headers=headers) as r:
             if (r.status == 200): 
                 print('OK')
@@ -82,15 +82,15 @@ class GeneralScraper():
 
             queue.task_done()
 
-    async def collect(self, 
-                      cities_hrefs: list[str], num_homes_extractors: int=5) -> dict[str, list]: 
+    async def collect_through_city_href(self, 
+                      cities_hrefs: list[str], num_workers: int=5) -> dict[str, list]: 
         queues = {'page_href': asyncio.Queue(), 'failed_city_href': asyncio.Queue(), 
                   'failed_page_href': asyncio.Queue(), 'home': asyncio.Queue()} 
         results = {'home': [], 'failed_city_href': [], 
                    'failed_page_href': []}
         async with aiohttp.ClientSession() as s:
             tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in cities_hrefs]
-            tasks_extract_homes = [asyncio.create_task(self.extract_homesFromPageHref(s, queues)) for _ in range(num_homes_extractors)]
+            tasks_extract_homes = [asyncio.create_task(self.extract_homesFromPageHref(s, queues)) for _ in range(num_workers)]
             tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 
                                asyncio.create_task(self.transship(queues['failed_city_href'], results['failed_city_href'], is_homes=False)), 
                                asyncio.create_task(self.transship(queues['failed_page_href'], results['failed_page_href'], is_homes=False))]
@@ -109,9 +109,9 @@ class GeneralScraper():
         return results 
             
     def main(self, 
-             cities_hrefs: list[str]) -> dict[str, list]:
+             cities_hrefs: list[str], num_workers: int=5) -> dict[str, list]:
         start = time.time()
-        results = asyncio.run(self.collect(cities_hrefs))
+        results = asyncio.run(self.collect_through_city_href(cities_hrefs, num_workers))
         print(f'Finished in: {time.time() - start}s')
 
         return results

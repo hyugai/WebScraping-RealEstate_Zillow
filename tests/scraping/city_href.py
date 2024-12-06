@@ -14,3 +14,5 @@ def scrape():
         cur = conn.cursor()
         cur.execute('CREATE TABLE IF NOT EXISTS city_href (href TEXT UNIQUE)')
         cur.executemany('INSERT OR REPLACE INTO city_href VALUES (?)', [(href,) for href in cities_hrefs])
+
+scrape()
