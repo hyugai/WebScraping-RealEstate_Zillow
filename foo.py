@@ -1,3 +1,4 @@
+import sqlite3
 import sys
 import random
 import requests
@@ -41,7 +42,6 @@ def foo2(
                     nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span") # Each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
                     unflattened_subCompound_Content: list[list[str]] = [[i.strip().replace('"', 'in').replace('\r\n', ' ').replace('\'', '') 
                                                                         for i in span.itertext()] for span in nodes_span]
-                    print(unflattened_subCompound_Content)
 
                     # Make it compatible with the others
                     noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
@@ -63,4 +63,13 @@ def foo2(
 
         else:
             print(f'Failed (error code {r.status_code})')
-foo2(single_quote_error)
+
+# exp
+def foo3():
+    path_to_db = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
+    with sqlite3.connect(path_to_db) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT extension FROM home WHERE extension IS NOT NULL")
+        rows = cur.fetchall()
+        print(rows)
+foo3()

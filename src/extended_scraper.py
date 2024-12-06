@@ -41,7 +41,7 @@ class ExtendedScraper():
                     xpath = "//h2[text()='Facts & features']/following-sibling::div/descendant::div[@data-testid='category-group']"
                     nodes_div = dom.xpath(xpath)
 
-                    allCompounds= {} # We will have 6 "parent compounds" (~ 6 nodes) including: "Interior", "Property", "Construction", "Utilities & green energy", "Community & HOA", "Financial & listing details"
+                    allCompounds: dict = {} # We will have 6 "parent compounds" (~ 6 nodes) including: "Interior", "Property", "Construction", "Utilities & green energy", "Community & HOA", "Financial & listing details"
 
                     for node in nodes_div:
                         parentCompound_Name: str = node.xpath("./descendant::h3")[0].text # PARENT COMPOUND'S NAME
@@ -51,12 +51,15 @@ class ExtendedScraper():
                             subCompound_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6") # If this is empty, this "ul" node will be "free texts"
                             
                             nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span") # Each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
-                            unflattened_subCompound_Content: list[list[str]]= [[i.strip().replace('"', 'in') for i in span.itertext()] for span in nodes_span]
+                            unflattened_subCompound_Content: list[list[str]]= [[i.strip().replace('"', 'in').replace('\r\n', ' ').replace('\'', '')  for i in span.itertext()] 
+                                                                                   for span in nodes_span] # replace '"' -> in, \r\n -> whitespace, ' -> null character
 
                             # Make it compatible with the others
-                            noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
+                            noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] \
+                                              for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
 
-                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' for i in unflattened_subCompound_Content if (':' in i)] # len(i) != 2 -> remove "View virtual tour"
+                            flattened_subCompound_Content: list[str] = ['{"' + '"'.join(i) + '"}' \
+                                                                            for i in unflattened_subCompound_Content if (':' in i)] # len(i) != 2 -> remove "View virtual tour"
                             flattened_subCompound_Content.extend(noKeyTexts) # Add fixed noKeyTexts 
 
                             subCompound_Content = dict()
@@ -69,7 +72,7 @@ class ExtendedScraper():
 
                         allCompounds[parentCompound_Name] = parentCompound_Content
                     
-                    await queues['home'].put((allCompounds, home_id))
+                    await queues['home'].put((json.dumps(allCompounds), home_id)) # convert to a JSON string
                 else:
                     print(f'Failed (error code: {r.status})')
                     await queues['failed_href'].put(href)
@@ -77,18 +80,12 @@ class ExtendedScraper():
             queues['href'].task_done()
 
     async def transship(self,
-                        queue: asyncio.Queue, results: list, 
-                        is_home: bool=True) -> None:
+                        queue: asyncio.Queue, results: list) -> None:
         while True:
-            item: tuple[int, dict] | str = await queue.get() 
-            if is_home:
-                home_id, homeDetails = item
-                results.append((home_id, json.dumps(homeDetails)))
-            else:
-                results.append(item)
+            item = await queue.get() 
+            results.append(item)
 
             queue.task_done()
-
 
     async def collect(self,
                       hrefs: list[tuple[int, str]], num_workers: int=5) -> dict[str, list]:
@@ -100,7 +97,7 @@ class ExtendedScraper():
             tasks_push_hrefs_into_queue = [asyncio.create_task(self.push_into_queue(item, queues['href'])) for item in hrefs]
             tasks_extract_homeDetails = [asyncio.create_task(self.extract_detailedInfo(s, queues)) for _ in range(num_workers)]
             tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 
-                               asyncio.create_task(self.transship(queues['failed_href'], results['failed_href'], is_home=False))] 
+                               asyncio.create_task(self.transship(queues['failed_href'], results['failed_href']))] 
             
             await asyncio.gather(*tasks_push_hrefs_into_queue) # use asyncio.gather specifically when the task is not in the "while True:..." loop, cause the program will hang forever to wait for that infinitive loop
 
@@ -115,6 +112,6 @@ class ExtendedScraper():
         start = time.time()
         results = asyncio.run(self.collect(hrefs, num_workers)) 
         print(f"Finished in: {time.time() - start}s \
-                \nSuccessful rate: {len(results['home'])/len(hrefs):.2f}%")
+                \nSuccessful rate: {(len(results['home'])/len(hrefs))*100:.2f}%")
 
         return results
