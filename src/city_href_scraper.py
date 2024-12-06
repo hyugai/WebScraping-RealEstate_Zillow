@@ -1,23 +1,18 @@
 # libs
-import asyncio
+import random 
 import requests
 from lxml import etree
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
+from zillow_conf import zillow
 
-# zillow's config
-ZILLOW_HEADERS = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
-    'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
-    'Referer': 'https://www.google.com.vn'
-}
-ZILLOW = 'https://www.zillow.com'
 
 # function: extract cities' hrefs
 def extract_cities_hrefs() -> list[str]:
     with requests.Session() as s:
-        ZILLOW_HEADERS['User-Agent'] = UserAgent().random 
-        r = s.get(ZILLOW, headers=ZILLOW_HEADERS) 
+        headers = random.choice(zillow['headers'])
+        headers['User-Agent'] = UserAgent().random 
+        r = s.get(zillow['homepage'], headers=headers) 
 
         if r.status_code == 200:
             print('OK')
@@ -25,11 +20,8 @@ def extract_cities_hrefs() -> list[str]:
             dom = etree.HTML(str(BeautifulSoup(r.text, features='lxml'))) 
             xpath = "//button[text()='Real Estate']/parent::div/following-sibling::ul/child::li/descendant::a"
             nodes_a = dom.xpath(xpath)
-            cities_hrefs = [ZILLOW + node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
+            cities_hrefs = [zillow['homepage']+ node.get('href') for node in nodes_a if node.get('href') != '/browse/homes/']
 
             return cities_hrefs
         else:
             raise Exception(f'Failed (error code: {r.status_code})')
-
-async def push_into_queue(queue: asyncio.Queue, item) -> None:
-    await queue.put(item) 

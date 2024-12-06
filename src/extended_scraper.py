@@ -1,23 +1,12 @@
 # libs
 import time
 import json
+import random
 import aiohttp
 import asyncio
 from lxml import etree
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
-
-# zillow's config
-#zillow_headers = {
-#    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
-#    'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
-#}
-zillow_headers = {
-        'Accept': '*/*', 
-        'Accept-Encoding': 'gzip, deflate, br, zstd', 
-        'Accept-Language': 'en-US,en;q=0.9,vi;q=0.8,nl;q=0.7'
-        }
-zillow = 'https://www.zillow.com'
+from zillow_conf import zillow
 
 # class DetailedHomesScraper
 """
@@ -28,7 +17,7 @@ Each node -> 2 sub-nodes:
  """
 class ExtendedScraper():
     def __init__(self) -> None:
-        self.headers = zillow_headers 
+        self.zillow = zillow
 
     async def push_into_queue(self, 
                               href: tuple[int, str], queue: asyncio.Queue) -> None:
@@ -39,7 +28,7 @@ class ExtendedScraper():
         #while not queues['href'].empty(): # using the .empty() method ONLY when we get the item out 
         while True:
             home_id, href = await queues['href'].get()
-            self.headers['User-Agent'] = UserAgent().random
+            self.headers = random.choice(self.zillow['headers'])
 
             async with s.get(href, headers=self.headers) as r:
                 if r.status == 200:

@@ -1,32 +1,24 @@
-
 # libs
 import time
 import json
+import random
 import aiohttp
 import asyncio
 from lxml import etree
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
-
-# zillow's config
-ZILLOW_HEADERS = {
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7',
-    'Accept-Encoding': 'gzip,deflate,sdch', 'Accept-Language': 'en-US,en;q=0.8', 
-    'Referer': 'https://www.google.com.vn'
-}
-ZILLOW = 'https://www.zillow.com'
+from zillow_conf import zillow
 
 # class GeneralHomeScraper
 class GeneralScraper():
     def __init__(self) -> None:
-        self.headers = ZILLOW_HEADERS
+        self.zillow = zillow
 
     # each city href will be assigned to a worker to extract pages hrefs
     async def extract_pages_hrefs(self,
                                   s: aiohttp.ClientSession, city_href: str, 
                                   queues: dict[str, asyncio.Queue]) -> None:
-        self.headers['User-Agent'] = UserAgent().random
-        async with s.get(city_href, headers=self.headers) as r:
+        headers = random.choice(self.zillow)
+        async with s.get(city_href, headers=headers) as r:
             if (r.status == 200): 
                 print('OK')
                 content = await r.text()
@@ -35,7 +27,7 @@ class GeneralScraper():
                 xpath = "//li[contains(@class, 'PaginationNumberItem')]/child::a"
                 nodes_a = dom.xpath(xpath)
                 
-                pages_hrefs = [ZILLOW + node.get('href') for node in nodes_a]
+                pages_hrefs = [self.zillow['homepage']+ node.get('href') for node in nodes_a]
                 for href in pages_hrefs:
                     await queues['page_href'].put(href)
             else:
@@ -48,8 +40,8 @@ class GeneralScraper():
         while True:
             page_href = await queues['page_href'].get() 
 
-            self.headers['User-Agent'] = UserAgent().random
-            async with s.get(page_href, headers=self.headers) as r:
+            headers = random.choice(self.zillow['headers'])
+            async with s.get(page_href, headers=headers) as r:
                 if r.status == 200:
                     print('OK')
 
@@ -96,7 +88,7 @@ class GeneralScraper():
                   'failed_page_href': asyncio.Queue(), 'home': asyncio.Queue()} 
         results = {'home': [], 'failed_city_href': [], 
                    'failed_page_href': []}
-        async with aiohttp.ClientSession(headers={'Referer': ZILLOW}) as s:
+        async with aiohttp.ClientSession() as s:
             tasks_extract_pages_hrefs= [asyncio.create_task(self.extract_pages_hrefs(s, href, queues)) for href in cities_hrefs]
             tasks_extract_homes = [asyncio.create_task(self.extract_homesFromPageHref(s, queues)) for _ in range(num_homes_extractors)]
             tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 
@@ -113,8 +105,6 @@ class GeneralScraper():
 
             for task in tasks_transship:
                 task.cancel()
-            # results
-            ##
 
         return results 
             

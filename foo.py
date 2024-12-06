@@ -1,67 +1,26 @@
-import pycurl
-import certifi
-from io import BytesIO
-from curl_cffi.requests import AsyncSession
-import curl_cffi
-import pyppeteer
+import sys
+import random
 import requests
-from fake_useragent import UserAgent
 from lxml import etree
 from bs4 import BeautifulSoup
+from pathlib import Path
 
-zillow_homepage = 'https://www.zillow.com/'
-zillow_headers = {
-        'Accept': '*/*', 
-        'Accept-Encoding': 'gzip, deflate, br, zstd', 
-        'Accept-Language': 'en-US,en;q=0.9,vi;q=0.8,nl;q=0.7'
-        }
+sys.path.append((Path.cwd()/'src').as_posix())
+from zillow_conf import zillow
+
 homeDetail_href = 'https://www.zillow.com/homedetails/215-Piedmont-Ave-NE-APT-907-Atlanta-GA-30308/35881658_zpid/'
 
 # exp
 def foo1():
     with requests.Session() as s: 
-        zillow_headers['User-Agent'] = UserAgent().random
-        r = s.get(zillow_homepage, headers=zillow_headers)
+        r = s.get(zillow['homepage'], headers=random.choice(zillow['headers']))
         print(r.status_code)
 
-# exp
-async def foo2():
-    browser = await pyppeteer.launch({'headless': False})
-    page = await browser.newPage()
-    await page.setUserAgent(UserAgent().random)
-    await page.setExtraHTTPHeaders(zillow_headers)
-    await page.goto(zillow_homepage)
+foo1()
 
-    await page.close()
-
-# exp
-def foo3():
-    c = pycurl.Curl()
-
-    c.setopt(c.URL, homeDetail_href)
-
-    buffer = BytesIO()
-    c.setopt(c.WRITEDATA, buffer)
-
-    c.setopt(c.CAINFO, certifi.where())
-
-    c.perform()
-    print(c.getinfo(c.RESPONSE_CODE))
-    c.close()
-
-# exp
-async def foo4():
-    async with AsyncSession() as s:
-        r = await s.get(homeDetail_href)
-        print(r.status_code)
-
-def foo5():
-    r = curl_cffi.requests.get(homeDetail_href, impersonate="safari_ios")
-    print(r.status_code)
-
-def foo6():
+def foo2():
     with requests.Session() as s:
-        r = s.get(homeDetail_href, headers={'User-Agent': UserAgent().random})
+        r = s.get(homeDetail_href, headers=random.choice(zillow['headers']))
         if r.status_code == 200:
             dom = etree.HTML(str(BeautifulSoup(r.text, features="lxml")))
 
@@ -100,5 +59,3 @@ def foo6():
 
         else:
             print(f'Failed (error code {r.status_code})')
-
-foo6()
