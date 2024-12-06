@@ -28,9 +28,9 @@ class ExtendedScraper():
         #while not queues['href'].empty(): # using the .empty() method ONLY when we get the item out 
         while True:
             home_id, href = await queues['href'].get()
-            self.headers = random.choice(self.zillow['headers'])
+            headers = random.choice(zillow['headers'])
 
-            async with s.get(href, headers=self.headers) as r:
+            async with s.get(href, headers=headers) as r:
                 if r.status == 200:
                     print('OK')
 
@@ -68,7 +68,7 @@ class ExtendedScraper():
 
                         allCompounds[parentCompound_Name] = parentCompound_Content
                     
-                    await queues['home'].put((home_id, allCompounds))
+                    await queues['home'].put((allCompounds, home_id))
                 else:
                     print(f'Failed (error code: {r.status})')
                     await queues['failed_href'].put(href)

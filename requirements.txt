@@ -1,13 +1,6 @@
 requests
-requests[socks]
-requests[security]
 aiohttp
-httpx
-httpx[http2]
 playwright
-playwright_stealth
-fake-useragent
 bs4
 lxml
-selenium
 pandas
