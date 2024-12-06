@@ -51,7 +51,7 @@ class ExtendedScraper():
                             subCompound_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6") # If this is empty, this "ul" node will be "free texts"
                             
                             nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span") # Each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
-                            unflattened_subCompound_Content: list[list[str]]= [[i.strip() for i in span.itertext()] for span in nodes_span]
+                            unflattened_subCompound_Content: list[list[str]]= [[i.strip().replace('"', 'in') for i in span.itertext()] for span in nodes_span]
 
                             # Make it compatible with the others
                             noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]

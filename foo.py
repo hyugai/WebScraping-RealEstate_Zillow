@@ -9,6 +9,8 @@ sys.path.append((Path.cwd()/'src').as_posix())
 from zillow_conf import zillow
 
 homeDetail_href = 'https://www.zillow.com/homedetails/215-Piedmont-Ave-NE-APT-907-Atlanta-GA-30308/35881658_zpid/'
+error_homeDetail_href  = 'https://www.zillow.com/homedetails/1414-Tivoli-Hl-San-Antonio-TX-78260/122495465_zpid/'
+single_quote_error = "https://www.zillow.com/homedetails/2617-Albion-St-Denver-CO-80207/13283871_zpid/"
 
 # exp
 def foo1():
@@ -16,11 +18,11 @@ def foo1():
         r = s.get(zillow['homepage'], headers=random.choice(zillow['headers']))
         print(r.status_code)
 
-foo1()
 
-def foo2():
+def foo2(
+        href: str) -> None:
     with requests.Session() as s:
-        r = s.get(homeDetail_href, headers=random.choice(zillow['headers']))
+        r = s.get(href, headers=random.choice(zillow['headers']))
         if r.status_code == 200:
             dom = etree.HTML(str(BeautifulSoup(r.text, features="lxml")))
 
@@ -37,7 +39,7 @@ def foo2():
                     subCompound_Name: list[etree._Element] = node_ul.xpath("./preceding-sibling::h6") # If this is empty, this "ul" node will be "free texts"
                     
                     nodes_span: list[etree._Element] = node_ul.xpath("./descendant::span") # Each node "span" consits of either 3 seprated strings or 1 single string (noted as noKeyTexts)
-                    unflattened_subCompound_Content: list[list[str]]= [[i.strip() for i in span.itertext()] for span in nodes_span]
+                    unflattened_subCompound_Content: list[list[str]] = [[i.strip().replace('"', 'in').replace('\'', '') for i in span.itertext()] for span in nodes_span]
 
                     # Make it compatible with the others
                     noKeyTexts = ['{"Description": "%s"}' % unflattened_subCompound_Content.pop(i)[0] for i, val in enumerate(unflattened_subCompound_Content) if (len(val) == 1)]
@@ -59,3 +61,4 @@ def foo2():
 
         else:
             print(f'Failed (error code {r.status_code})')
+foo2(single_quote_error)
