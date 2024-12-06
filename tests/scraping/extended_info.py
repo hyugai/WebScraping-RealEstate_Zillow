@@ -15,5 +15,4 @@ with sqlite3.connect(path_to_db) as conn:
     rows = [(home_id, json.loads(info)['detailUrl']) for home_id, info in cur.fetchall()]
 
 scraper = ExtendedScraper()
-results = scraper.main(rows[:6])
-print(len(results['home']))
+results = scraper.main(rows[:6], 2)
