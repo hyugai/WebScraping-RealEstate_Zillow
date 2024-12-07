@@ -14,7 +14,7 @@ with sqlite3.connect(path_to_db) as conn:
     rows = cur.fetchall()
 
 scraper = ExtendedScraper()
-results = scraper.main(rows[:5], 3)
+results = scraper.main(rows, 3)
 
 homes = results['home']
 if homes:
