@@ -1,3 +1,5 @@
+from fake_useragent import UserAgent
+
 zillow = {
     "headers": [
         {
@@ -90,7 +92,6 @@ zillow = {
             "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
         },
         {
-            "Host": "127.0.0.1:65432",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:98.0) Gecko/20100101 Firefox/98.0",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.5",
@@ -110,6 +111,12 @@ zillow = {
             "Accept-Language": "en-gb",
             "Accept-Encoding": "gzip, deflate",
             "Connection": "keep-alive",
+        },
+        {
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/wexchange;v=b3;q=0.7",
+            "User-Agent": UserAgent().random,
+            "Accept-Language": "en-US,en;q=0.8",
+            "Accept-Encoding": "gzip,deflate,sdch",
         },
     ],
     "homepage": "https://www.zillow.com",

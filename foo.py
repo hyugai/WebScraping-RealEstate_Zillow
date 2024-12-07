@@ -63,13 +63,14 @@ def foo2(
 
         else:
             print(f'Failed (error code {r.status_code})')
-foo2(error_homeDetail_href)
 
 # exp
 def foo3():
     path_to_db = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
     with sqlite3.connect(path_to_db) as conn:
         cur = conn.cursor()
-        cur.execute("SELECT extension FROM home WHERE extension IS NOT NULL")
+        cur.execute("SELECT * FROM home")
         rows = cur.fetchall()
-        print(rows)
+        print(rows[0])
+
+foo3()

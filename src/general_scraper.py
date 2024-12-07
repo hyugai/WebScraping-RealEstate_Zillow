@@ -21,7 +21,8 @@ class GeneralScraper():
     async def extractPagesHrefs(self,
                                   s: aiohttp.ClientSession, city_href: str, 
                                   queues: dict[str, asyncio.Queue]) -> None:
-        headers = random.choice(self.zillow['headers'])
+        # headers = random.choice(self.zillow['headers'])
+        headers = self.zillow['headers'][-1]
         async with s.get(city_href, headers=headers) as r:
             if (r.status == 200): 
                 print('OK')
