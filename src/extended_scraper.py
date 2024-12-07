@@ -30,6 +30,7 @@ class ExtendedScraper():
             home_id, href = await queues['href'].get()
             print(href)
             headers = random.choice(zillow['headers'])
+            # headers = zillow['headers'][-1]
 
             async with s.get(href, headers=headers) as r:
                 if r.status == 200:
@@ -72,10 +73,9 @@ class ExtendedScraper():
 
                         allCompounds[parentCompound_Name] = parentCompound_Content
                     
-                    await queues['home'].put((json.dumps(allCompounds), home_id)) # convert to a JSON string
+                    await queues['home'].put((json.dumps(allCompounds), 1, home_id)) # convert to a JSON string
                 else:
                     print(f'Failed (error code: {r.status})')
-                    await queues['failed_href'].put(href)
 
             queues['href'].task_done()
 
@@ -89,21 +89,19 @@ class ExtendedScraper():
 
     async def collect(self,
                       hrefs: list[tuple[int, str]], num_workers: int=5) -> dict[str, list]:
-        queues = {'href': asyncio.Queue(), 'failed_href': asyncio.Queue(),
-                  'home': asyncio.Queue()}
-        results = {'failed_href': [], 'home': []}
+        queues = {'href': asyncio.Queue(), 'home': asyncio.Queue()}
+        results = {'home': []}
 
         async with aiohttp.ClientSession() as s:
             tasks_push_hrefs_into_queue = [asyncio.create_task(self.push_into_queue(item, queues['href'])) for item in hrefs]
             tasks_extract_homeDetails = [asyncio.create_task(self.extract_detailedInfo(s, queues)) for _ in range(num_workers)]
-            tasks_transship = [asyncio.create_task(self.transship(queues['home'], results['home'])), 
-                               asyncio.create_task(self.transship(queues['failed_href'], results['failed_href']))] 
+            task_transship = asyncio.create_task(self.transship(queues['home'], results['home'])) 
             
             await asyncio.gather(*tasks_push_hrefs_into_queue) # use asyncio.gather specifically when the task is not in the "while True:..." loop, cause the program will hang forever to wait for that infinitive loop
 
             [await q.join() for q in queues.values()]
             [t.cancel() for t in tasks_extract_homeDetails]
-            [t.cancel() for t in tasks_transship]
+            task_transship.cancel()
 
         return results
 

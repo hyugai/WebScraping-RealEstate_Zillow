@@ -69,8 +69,8 @@ def foo3():
     path_to_db = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
     with sqlite3.connect(path_to_db) as conn:
         cur = conn.cursor()
-        cur.execute("SELECT * FROM home")
+        cur.execute("SELECT * FROM home WHERE is_extended=1")
         rows = cur.fetchall()
-        print(rows[0])
+        print(len(rows), rows[0])
 
 foo3()
