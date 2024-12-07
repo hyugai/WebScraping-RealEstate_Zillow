@@ -36,7 +36,7 @@ class GeneralScraper():
                     await queues['page_href'].put(href)
             else:
                 print(f'Failed (error code: {r.status})')
-                await queues['failed_city_href'].put(city_href) 
+                await queues['failed_city_href'].put([city_href]) 
 
     # each page href will wait to be assigned to 1 of N below workers to extract general homes info
     """
