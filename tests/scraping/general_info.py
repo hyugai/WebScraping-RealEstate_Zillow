@@ -22,7 +22,7 @@ def scrape():
     with sqlite3.connect(db_path) as conn:
         cur = conn.cursor()
         cur.execute("CREATE TABLE IF NOT EXISTS home (id INTEGER UNIQUE, general_info TEXT, detail_url TEXT, extended_info TEXT DEFAULT NULL, is_extended INTEGER DEFAULT 0)")
-        cur.executemany("INSERT OR REPLACE INTO home (id, general_info, detail_url) VALUES (?, ?, ?)", results['home'])
+        cur.executemany("INSERT OR IGNORE INTO home (id, general_info, detail_url) VALUES (?, ?, ?)", results['home']) # use IGNORE to preserve the information
 
     csv_path = (Path.cwd()/'tests'/'resource'/'db'/'failed_city_href.csv').as_posix()
     pd.DataFrame({'href': results['failed_city_href']})\
@@ -31,7 +31,8 @@ def scrape():
     pd.DataFrame({'href': results['failed_page_href']})\
         .to_csv(csv_path, index=False)
 
-scrape()
+def re_scrapeHome_throughFailedCityHref():
+    pass
 
-def re_scrape():
+def re_scrapeHome_throughFailedPageHref():
     pass

@@ -1,10 +1,12 @@
 import sqlite3
 import sys
 import random
+from numpy._core.defchararray import index
 import requests
 from lxml import etree
 from bs4 import BeautifulSoup
 from pathlib import Path
+import pandas as pd
 
 sys.path.append((Path.cwd()/'src').as_posix())
 from zillow_conf import zillow
@@ -68,9 +70,8 @@ def foo2(
 def foo3():
     path_to_db = (Path.cwd()/'tests'/'resource'/'db'/'real_estate.db').as_posix()
     with sqlite3.connect(path_to_db) as conn:
+        # pd.read_sql("SELECT * FROM home WHERE is_extended=1", con=conn).to_csv('foo.csv', index=False)
         cur = conn.cursor()
-        cur.execute("SELECT * FROM home WHERE is_extended=1")
-        rows = cur.fetchall()
-        print(len(rows), rows[0])
-
+        cur.execute("SELECT detail_url FROM home WHERE is_extended=0")
+        print(len(cur.fetchall()))
 foo3()
